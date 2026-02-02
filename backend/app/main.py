@@ -14,3 +14,9 @@ app = FastAPI(
 @app.get("/")
 def root():
     return {"status" : "Backend is running"}
+
+from app.core.database import engine
+
+@app.get("/db-test")
+def db_test():
+    return {"db": str(engine.url)}
