@@ -1,22 +1,27 @@
-"""
-main.py
-This is the entry point of the FastAPI application.
-It initializes the app and includes API routers.
-"""
-
 from fastapi import FastAPI
+import os
+from supabase import create_client, Client
+from dotenv import load_dotenv
 
-app = FastAPI(
-    title="AI-Based Smart Placement & Internship Coordination System",
-    version="1.0.0" 
-)
+load_dotenv()
+app = FastAPI()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 
 @app.get("/")
-def root():
-    return {"status" : "Backend is running"}
+def home():
+    response = supabase.table("companies").select("*").execute()
+    return {"data": response.data}
 
-from app.core.database import engine
 
-@app.get("/db-test")
-def db_test():
-    return {"db": str(engine.url)}
+@app.get("/health")
+def health_check():
+    try:
+        supabase.table("companies").select("id").limit(1).execute()
+        return {"status": "ok"}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
