@@ -18,15 +18,15 @@ class StudentProfileCreate(BaseModel):
     linkedin_url: str
     github_url: str
     portfolio_url: str
-    placement_status: Literal["placed", "unplaced", "offer_received"]
+    placement_status: Literal["placed", "unplaced", "offer_received"] 
     is_profile_complete: bool = False
 
 class CoordinatorProfileCreate(BaseModel):
+    first_name: str
+    last_name: str
     is_primary: bool = True
 
 class CompanyProfileCreate(BaseModel):
-    first_name: str
-    last_name: str
     name: str
     website_url: HttpUrl
     logo_url: HttpUrl

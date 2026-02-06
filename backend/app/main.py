@@ -3,7 +3,7 @@ import os
 from supabase import create_client, Client
 from dotenv import load_dotenv
 from app.routers.auth import router
-from app.routers.profileCreate import profile_create
+from app.routers.profileCreate import student_profile_create, coordinator_profile_create
 
 load_dotenv()
 app = FastAPI()
@@ -29,4 +29,5 @@ def health_check():
         return {"status": "error", "detail": str(e)}
     
 app.include_router(router)
-app.include_router(profile_create)
+app.include_router(student_profile_create)
+app.include_router(coordinator_profile_create)

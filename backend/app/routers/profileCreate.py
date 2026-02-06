@@ -3,14 +3,16 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.student import Student
+from app.models.coordinator import Coordinator
 from app.models.user import User
-from app.schemas.profileCreate import StudentProfileCreate  #, CompanyProfileCreate,  CoordinatorProfileCreate
+from app.schemas.profileCreate import StudentProfileCreate  ,  CoordinatorProfileCreate #, CompanyProfileCreate
 from app.core.security import get_current_user
 
-profile_create = APIRouter(prefix="/student", tags=["Student"])
+student_profile_create = APIRouter(prefix="/student", tags=["Student"])
+coordinator_profile_create = APIRouter(prefix="/coordinator", tags=["Coordinator"])
 
 
-@profile_create.post("/profile")
+@student_profile_create.post("/profile")
 def create_student_profile(
     payload: StudentProfileCreate,
     db: Session = Depends(get_db),
@@ -39,3 +41,28 @@ def create_student_profile(
     return {"message": "Student profile created", "profile": student}
 
 
+
+@coordinator_profile_create.post("/profile")
+def create_coordinator_profile(
+    payload: CoordinatorProfileCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.role != "coordinator":
+        raise HTTPException(status_code=403, detail="Not a coordinator")
+    
+    existing = db.query(Coordinator).filter_by(user_id=current_user.id).first()
+
+    if existing:
+        for key, value in payload.model_dump().items():
+            setattr(existing, key, value)
+        db.commit()
+        db.refresh(existing)
+        return {"message": "Coordinator profile updated", "profile": existing}        
+
+    coordinator = Coordinator(user_id=current_user.id, **payload.model_dump())
+    db.add(coordinator)
+    db.commit()
+    db.refresh(coordinator)
+
+    return {"message": "Coordinator profile created", "profile": coordinator}
