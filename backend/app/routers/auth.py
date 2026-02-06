@@ -2,13 +2,18 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from jose import JWTError
 import bcrypt
+from uuid import UUID
 
+from app.db.session import get_db
+from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
+from app.models.user import User
+from app.models.student import Student
+from app.models.coordinator import Coordinator
 from app.core.security import (
     create_access_token,
     create_refresh_token,
     verify_refresh_token,
 )
-
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -38,30 +43,6 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
-
-    # 4. Create role-specific profile
-    if payload.role == "student":
-        student = Student(
-            user_id=user.id,
-            roll_no=payload.roll_no,
-            first_name=payload.first_name,
-            last_name=payload.last_name,
-            department_id=payload.department,
-            batch_year=payload.batch_year,
-            cgpa=payload.cgpa,
-        )
-        db.add(student)
-
-    elif payload.role == "coordinator":
-        coordinator = Coordinator(
-            user_id=user.id,
-            first_name=payload.first_name,
-            last_name=payload.last_name,
-            is_primary=False,
-        )
-        db.add(coordinator)
-
-    db.commit()
 
     # 5. Generate tokens
     access_token = create_access_token(user_id=user.id, role=user.role)
@@ -113,10 +94,11 @@ def refresh_token(refresh_token: str):
     try:
         payload = verify_refresh_token(refresh_token)
         user_id = payload.get("sub")
+        role = role.get("role")
 
         access_token = create_access_token(
-            user_id=user_id,
-            role="student",  # role will be checked again via DB/RLS
+            user_id=UUID(user_id),
+            role=role,  # role will be checked again via DB/RLS
         )
 
         return TokenResponse(

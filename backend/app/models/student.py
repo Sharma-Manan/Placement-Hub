@@ -38,7 +38,7 @@ class Student(Base):
     last_name = Column(String, nullable=False)
 
     department_id = Column(String, nullable=False)
-    batch_year = Column(Integer, nullable=False)
+    graduation_year = Column(Integer, nullable=False)
 
     cgpa = Column(Numeric(3, 2))
     active_backlogs = Column(Integer, default=0)

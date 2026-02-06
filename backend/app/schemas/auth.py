@@ -1,7 +1,11 @@
-from typing import Optional, Literal
+from typing import Literal
+from uuid import UUID
 from pydantic import BaseModel, EmailStr, Field
 
 
+class CurrentUser(BaseModel):
+    id: UUID
+    role: str
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -17,14 +21,15 @@ class RegisterRequest(BaseModel):
     first_name: str
     last_name: str
 
-    roll_no: Optional[str] = None
-    department: Optional[str] = None
-    batch_year: Optional[int] = None
-    cgpa: Optional[float] = None
-
-
 
 class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
+
+
+
+    # roll_no: Optional[str] = None
+    # department: Optional[str] = None
+    # batch_year: Optional[int] = None
+    # cgpa: Optional[float] = None
