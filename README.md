@@ -22,7 +22,7 @@ source venv/bin/activate
 4. Install backend dependencies
 pip install -r requirements.txt
 
-5. Create .env file in backend folder
+5. Create .env file in backend folder \n
 DATABASE_URL=your_database_url
 JWT_SECRET_KEY=your_secret_key
 ACCESS_TOKEN_EXPIRE_MINUTES=60
