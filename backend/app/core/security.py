@@ -2,6 +2,8 @@ from datetime import datetime , timedelta, timezone
 from typing import  Dict, Annotated
 from fastapi import Depends, HTTPException, status
 from jose import jwt, JWTError, ExpiredSignatureError
+from fastapi import Header, HTTPException, status
+
 
 from app.schemas.auth import CurrentUser
 
@@ -73,17 +75,19 @@ def verify_refresh_token(token: str) -> Dict:
     return payload
 
 
-def get_current_user(token) -> CurrentUser:
-    print("start..............")
+def get_current_user(authorization: str = Header(...)) -> CurrentUser:
     try:
+        # Extract token from "Bearer <token>"
+        token = authorization.replace("Bearer ", "")
+
         payload = decode_token(token)
 
-        user_id: int | None = payload.get("sub")
-        role: str | None = payload.get("role")
+        user_id = payload.get("sub")
+        role = payload.get("role")
 
         if not user_id or not role:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Invalid token"
             )
 
@@ -94,7 +98,7 @@ def get_current_user(token) -> CurrentUser:
 
     except ExpiredSignatureError:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
+            status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Token has expired"
         )
 
