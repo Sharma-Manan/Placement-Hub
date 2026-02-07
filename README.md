@@ -6,17 +6,15 @@ STEPS TO RUN PLACEMIND.AI
 git clone <your-repo-url>
 cd placemind.ai
 
-
 BACKEND (FastAPI)
-
 2. Create virtual environment
 python -m venv venv
 
 3. Activate virtual environment
-Windows:
+Windows
 venv\Scripts\activate
 
-Mac/Linux:
+Mac / Linux
 source venv/bin/activate
 
 4. Install backend dependencies
@@ -28,17 +26,24 @@ JWT_SECRET_KEY=your_secret_key
 ACCESS_TOKEN_EXPIRE_MINUTES=60
 REFRESH_TOKEN_EXPIRE_DAYS=7
 
+
+⬆️ THIS is why it will NOT appear in one line
+Code blocks preserve line breaks.
+
 6. Run backend server
 uvicorn app.main:app --reload
 
-Backend runs on:
+
+Backend URL:
+
 http://127.0.0.1:8000
-Swagger docs:
+
+
+Swagger Docs:
+
 http://127.0.0.1:8000/docs
 
-
 FRONTEND (React + Vite)
-
 7. Go to frontend folder
 cd frontend
 
@@ -48,17 +53,28 @@ npm install
 9. Start frontend
 npm run dev
 
-Frontend runs on:
+
+Frontend URL:
+
 http://localhost:5173
 
-
 USING THE APPLICATION
+10. Register user
 
-10. Register user (student or coordinator)
+Register as student or coordinator
 
 11. Login user
 
-12. If student, fill Student Profile and click Save Profile
+Login to receive JWT token
 
+12. Student Profile
+
+Open Student Profile page
+
+Fill details
+
+Click Save Profile
+
+Note:
 Only one profile is created per user.
-Existing profile is updated on save.
+Saving again updates the same profile.
