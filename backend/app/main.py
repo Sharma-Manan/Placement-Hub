@@ -13,7 +13,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://placemind-backend.onrender.com",
+        "https://placement-hub-2-ghda.onrender.com",
     ],  # Vite frontend
     allow_credentials=True,
     allow_methods=["*"],
