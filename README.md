@@ -27,7 +27,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES=60
 REFRESH_TOKEN_EXPIRE_DAYS=7
 
 
-⬆️ THIS is why it will NOT appear in one line
+
 Code blocks preserve line breaks.
 
 6. Run backend server
