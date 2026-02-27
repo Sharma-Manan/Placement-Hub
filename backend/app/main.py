@@ -2,19 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from supabase import create_client, Client
-from dotenv import load_dotenv
+from app.core.config import origins
 from app.routers.auth import router
 from app.routers.profileCreate import student_profile_create, coordinator_profile_create
 from app.routers.company import company_router
 
-load_dotenv()
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://placement-hub-2-ghda.onrender.com",
-    ],  # Vite frontend
+    allow_origins=[origins],  # Vite frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
