@@ -10,7 +10,7 @@ from app.routers.company import company_router
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[origins],  # Vite frontend
+    allow_origins=origins,  # Vite frontend
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
