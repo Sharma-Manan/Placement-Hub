@@ -14,10 +14,10 @@ class StudentProfileCreate(BaseModel):
     total_backlogs: int
     tenth_percentage: float
     twelfth_percentage: float
-    resume_url: str
-    linkedin_url: str
-    github_url: str
-    portfolio_url: str
+    resume_url: HttpUrl
+    linkedin_url: HttpUrl
+    github_url: HttpUrl
+    portfolio_url: HttpUrl
     placement_status: Literal["placed", "unplaced", "offer_received"] 
     is_profile_complete: bool = False
 
