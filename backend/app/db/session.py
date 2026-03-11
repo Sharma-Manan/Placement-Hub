@@ -22,13 +22,12 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
-    # This line is CRITICAL for the Supabase Transaction Pooler
-    # It prevents "prepared statement" errors
-    prepared_statement_cache_size=0,
+    # We move the fix here to ensure it's compatible with your SQLAlchemy version
+    execution_options={
+        "prepared_statement_cache_size": 0
+    },
     connect_args={
-        "options": "-c statement_timeout=30000",
-        # Some versions of psycopg2 also need this in connect_args
-        "client_encoding": "utf8"
+        "options": "-c statement_timeout=30000"
     },
 )
 
