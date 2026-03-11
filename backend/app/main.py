@@ -23,19 +23,11 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-@app.get("/")
-def home():
-    response = supabase.table("companies").select("*").execute()
-    return {"data": response.data}
 
+@app.get("/debug-cors")
+def debug_cors():
+    return {"origins": origins}
 
-@app.get("/health")
-def health_check():
-    try:
-        supabase.table("companies").select("id").limit(1).execute()
-        return {"status": "ok"}
-    except Exception as e:
-        return {"status": "error", "detail": str(e)}
     
 app.include_router(router)
 app.include_router(student_profile_create)
