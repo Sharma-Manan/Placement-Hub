@@ -22,13 +22,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(
     DATABASE_URL,
     pool_pre_ping=True,
-    # We move the fix here to ensure it's compatible with your SQLAlchemy version
-    execution_options={
-        "prepared_statement_cache_size": 0
-    },
     connect_args={
         "options": "-c statement_timeout=30000"
-    },
+    }
 )
 
 SessionLocal = sessionmaker(
