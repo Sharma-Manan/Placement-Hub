@@ -14,7 +14,7 @@ class StudentProfileCreate(BaseModel):
     total_backlogs: int
     tenth_percentage: float
     twelfth_percentage: float
-    resume_url: HttpUrl
+    resume_url: str
     linkedin_url: HttpUrl
     github_url: HttpUrl
     portfolio_url: HttpUrl
