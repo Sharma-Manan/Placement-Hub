@@ -4,10 +4,8 @@ from typing import Literal
 class StudentProfileCreate(BaseModel):
     first_name: str
     last_name: str
-    # phone_number: str
     roll_no: str
     department_id: str
-    # branch: str
     graduation_year: int
     cgpa: float  
     active_backlogs: int
@@ -15,10 +13,10 @@ class StudentProfileCreate(BaseModel):
     tenth_percentage: float
     twelfth_percentage: float
     resume_url: str
-    linkedin_url: str
-    github_url: str
-    portfolio_url: str
-    placement_status: Literal["placed", "unplaced", "offer_received"] 
+    linkedin_url: HttpUrl
+    github_url: HttpUrl
+    portfolio_url: HttpUrl
+    placement_status: Literal["placed", "unplaced", "offer_received"] = "unplaced"
     is_profile_complete: bool = False
 
 class CoordinatorProfileCreate(BaseModel):

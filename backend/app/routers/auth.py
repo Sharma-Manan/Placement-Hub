@@ -38,6 +38,8 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         email=payload.email,
         password_hash=hashed_password,
         role=payload.role,
+        first_name=payload.first_name,
+        last_name=payload.last_name,
         is_active=True,
     )
     db.add(user)
@@ -90,7 +92,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=TokenResponse)
-def refresh_token(refresh_token: str):
+def refresh_access_token(refresh_token: str):
     try:
         payload = verify_refresh_token(refresh_token)
         user_id = payload.get("sub")

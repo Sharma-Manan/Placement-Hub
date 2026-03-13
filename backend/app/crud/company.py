@@ -1,4 +1,4 @@
-# app/crud/crud_company.py
+# app/crud/company.py
 
 from sqlalchemy.orm import Session
 from uuid import uuid4, UUID
@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import or_
 
 from app.models.company import Company
-from app.schemas.profileCompany import CompanyCreate, CompanyUpdate
+from app.schemas.company import CompanyCreate, CompanyUpdate
 from sqlalchemy.orm import Session
 
 def search_companies(db: Session, search: str, skip: int = 0, limit: int = 10):
