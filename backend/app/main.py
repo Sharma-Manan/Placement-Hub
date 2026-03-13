@@ -7,6 +7,7 @@ from app.routers.auth import router
 from app.routers.profiles import student_profile_create, coordinator_profile_create
 from app.routers.company import company_router
 from app.routers.upload import upload_router
+from app.routers.opportunity import opportunity_router
 
 app = FastAPI()
 app.add_middleware(
@@ -35,4 +36,4 @@ app.include_router(student_profile_create)
 app.include_router(coordinator_profile_create)
 app.include_router(company_router)
 app.include_router(upload_router)
-
+app.include_router(opportunity_router)
