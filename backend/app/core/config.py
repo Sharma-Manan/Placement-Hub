@@ -8,6 +8,7 @@ ENVIRONMENT =  os.getenv("ENVIRONMENT", "development")
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
