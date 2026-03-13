@@ -92,7 +92,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/refresh", response_model=TokenResponse)
-def refresh_token(refresh_token: str):
+def refresh_access_token(refresh_token: str):
     try:
         payload = verify_refresh_token(refresh_token)
         user_id = payload.get("sub")

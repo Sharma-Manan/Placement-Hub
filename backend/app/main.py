@@ -4,7 +4,7 @@ import os
 from supabase import create_client, Client
 from app.core.config import origins
 from app.routers.auth import router
-from app.routers.profileCreate import student_profile_create, coordinator_profile_create
+from app.routers.profiles import student_profile_create, coordinator_profile_create
 from app.routers.company import company_router
 
 app = FastAPI()

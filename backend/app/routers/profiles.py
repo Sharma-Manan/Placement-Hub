@@ -5,7 +5,7 @@ from app.db.session import get_db
 from app.models.student import Student
 from app.models.coordinator import Coordinator
 from app.models.user import User
-from app.schemas.profileCreate import StudentProfileCreate  ,  CoordinatorProfileCreate #, CompanyProfileCreate
+from app.schemas.profiles import StudentProfileCreate, CoordinatorProfileCreate  # CompanyProfileCreate
 from app.core.security import get_current_user
 from fastapi import status
 
@@ -15,7 +15,7 @@ coordinator_profile_create = APIRouter(prefix="/coordinator", tags=["Coordinator
 
 
 @student_profile_create.post("/profile")
-def create_or_update_student_profile(
+def upsert_student_profile(
     payload: StudentProfileCreate,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
