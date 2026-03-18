@@ -8,8 +8,7 @@ from app.schemas.opportunity import OpportunityCreate, OpportunityUpdate
 
 def create_opportunity(db: Session, opportunity_in: OpportunityCreate) -> Opportunity:
     opportunity = Opportunity(
-        id=str(uuid4()),
-        **opportunity_in.dict()
+        **opportunity_in.model_dump()
     )
 
     db.add(opportunity)
@@ -51,7 +50,7 @@ def update_opportunity(
 
     opportunity = get_opportunity(db, opportunity_id)
 
-    for field, value in opportunity_in.dict(exclude_unset=True).items():
+    for field, value in opportunity_in.model_dump(exclude_unset=True).items():
         setattr(opportunity, field, value)
 
     db.commit()
@@ -67,4 +66,4 @@ def delete_opportunity(db: Session, opportunity_id: str) -> Opportunity:
     db.delete(opportunity)
     db.commit()
 
-    return opportunity
+    return None

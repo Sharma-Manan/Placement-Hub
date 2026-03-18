@@ -1,10 +1,11 @@
 from sqlalchemy import Column, String, Text
 from app.db.base import Base
+import uuid
 
 class Company(Base):
     __tablename__ = "companies"
 
-    id = Column(String, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid.uuid4()))
     name = Column(String, nullable=False)
     website_url = Column(String, nullable=True)
     logo_url = Column(String, nullable=True)

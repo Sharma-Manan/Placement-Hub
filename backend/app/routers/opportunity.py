@@ -54,7 +54,7 @@ def update_opportunity(
     return crud_update_opportunity(db, opportunity_id, opportunity_in)
 
 
-@opportunity_router.delete("/{opportunity_id}", response_model=OpportunityOut)
+@opportunity_router.delete("/{opportunity_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_opportunity(
     opportunity_id: str,
     db: Session = Depends(get_db),
@@ -63,4 +63,5 @@ def delete_opportunity(
     if current_user.role != "coordinator":
         raise HTTPException(status_code=403, detail="Only coordinators can delete opportunities")
 
-    return crud_delete_opportunity(db, opportunity_id)
+    crud_delete_opportunity(db, opportunity_id)
+    return
