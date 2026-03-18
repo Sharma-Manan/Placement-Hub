@@ -25,7 +25,7 @@ def create_company(db: Session, company_in: CompanyCreate) -> Company:
             status_code=status.HTTP_409_CONFLICT,
             detail="Company with this website already exists",
         )
-    company = Company(id=str(uuid4()), **company_in.dict())
+    company = Company(**company_in.model_dump())
     db.add(company)
     db.commit()
     db.refresh(company)
