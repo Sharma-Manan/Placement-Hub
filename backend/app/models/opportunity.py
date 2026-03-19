@@ -20,7 +20,7 @@ class Opportunity(Base):
     title       = Column(Text, nullable=False)
     description = Column(Text)
     location    = Column(Text)
-    ctc_lpa     = Column(Numeric(5, 2), nullable=False)  # was salary
+    ctc_lpa     = Column(Text)  # was salary
     status      = Column(String, nullable=False, default="draft")  # was missing
 
     application_deadline = Column(DateTime(timezone=True), nullable=False)

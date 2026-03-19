@@ -8,6 +8,7 @@ from app.routers.profiles import student_profile_create, coordinator_profile_cre
 from app.routers.company import company_router
 from app.routers.upload import upload_router
 from app.routers.opportunity import opportunity_router
+from app.routers.application import application_router
 from app.routers.eligibility import eligibility_router
 
 
@@ -40,3 +41,4 @@ app.include_router(company_router)
 app.include_router(upload_router)
 app.include_router(opportunity_router)
 app.include_router(eligibility_router)
+app.include_router(application_router)
