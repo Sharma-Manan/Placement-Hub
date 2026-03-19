@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Text, DateTime, ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
@@ -17,13 +17,13 @@ class Opportunity(Base):
         nullable=False
     )
 
-    title = Column(Text, nullable=False)
+    title       = Column(Text, nullable=False)
     description = Column(Text)
-    location = Column(Text)
-    salary = Column(Text)
+    location    = Column(Text)
+    ctc_lpa     = Column(Numeric(5, 2), nullable=False)  # was salary
+    status      = Column(String, nullable=False, default="draft")  # was missing
 
-    application_deadline = Column(DateTime)
+    application_deadline = Column(DateTime(timezone=True), nullable=False)
 
-    created_at = Column(DateTime, server_default=func.now())
-
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())

@@ -40,7 +40,7 @@ class Student(Base):
     department_id = Column(String, nullable=False)
     graduation_year = Column(Integer, nullable=False)
 
-    cgpa = Column(Numeric(3, 2))
+    cgpa = Column(Numeric(4, 2)) 
     active_backlogs = Column(Integer, default=0)
     total_backlogs = Column(Integer, default=0)
 
