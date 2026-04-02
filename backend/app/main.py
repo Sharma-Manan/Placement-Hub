@@ -33,6 +33,10 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 def debug_cors():
     return {"origins": origins}
 
+@app.get("/health")
+def health():
+    return {"status": "ok"}
+
     
 app.include_router(router)
 app.include_router(student_profile_create)
