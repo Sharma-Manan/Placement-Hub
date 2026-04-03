@@ -2,6 +2,7 @@ from sqlalchemy import Column, Text, DateTime, ForeignKey, Numeric, String
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
+from sqlalchemy import Boolean
 
 from app.db.base import Base
 
@@ -24,6 +25,16 @@ class Opportunity(Base):
     status      = Column(String, nullable=False, default="draft")  # was missing
 
     application_deadline = Column(DateTime(timezone=True), nullable=False)
+
+    company_name = Column(String, nullable=True)  # denormalized for fast access
+
+    is_accepting_applications = Column(
+        Boolean,
+        nullable=False,
+        default=True
+    )
+
+    additional_criteria = Column(Text, nullable=True)
 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
