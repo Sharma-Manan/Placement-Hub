@@ -16,6 +16,7 @@ class OpportunityBase(BaseModel):
     title:                str
     description:          Optional[str]   = None
     location:             Optional[str]   = None
+    additional_criteria: Optional[str] = None
     ctc_lpa:              float
     application_deadline: datetime
 
@@ -26,10 +27,9 @@ class OpportunityBase(BaseModel):
             raise ValueError("ctc_lpa must be positive")
         return v
 
-
+#changed
 class OpportunityCreate(OpportunityBase):
-    # company_id comes from URL: POST /companies/{company_id}/opportunities
-    pass
+    company_name: str
 
 
 class OpportunityUpdate(BaseModel):
@@ -51,6 +51,7 @@ class OpportunityUpdate(BaseModel):
 class OpportunityOut(OpportunityBase):
     id:         UUID
     company_id: UUID          # present in output, injected in route not body
+    company_name: str
     status:     OpportunityStatus
     created_at: datetime
     updated_at: datetime

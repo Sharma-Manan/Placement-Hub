@@ -20,14 +20,18 @@ from app.crud.opportunity import (
 opportunity_router = APIRouter(tags=["Opportunities"])
     
 
-@opportunity_router.post("/companies/{company_id}/opportunities",response_model=OpportunityOut, status_code=status.HTTP_201_CREATED)
+@opportunity_router.post(
+    "/opportunities",
+    response_model=OpportunityOut,
+    status_code=status.HTTP_201_CREATED
+)
 def create_opportunity(
-    company_id:  UUID,
-    payload:     OpportunityCreate,
-    db:          Session      = Depends(get_db),
-    _:           CurrentUser  = Depends(require_coordinator),
+    payload: OpportunityCreate,
+    db: Session = Depends(get_db),
+    _: CurrentUser = Depends(require_coordinator),
 ):
-    return crud_create_opportunity(db, payload, company_id)
+    return crud_create_opportunity(db, payload)
+
 
 @opportunity_router.patch(
     "/opportunities/{opportunity_id}",

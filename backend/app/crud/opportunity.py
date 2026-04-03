@@ -6,20 +6,47 @@ from fastapi import HTTPException, status
 
 from app.models.opportunity import Opportunity
 from app.schemas.opportunity import OpportunityCreate, OpportunityUpdate
+from app.models.company import Company
 
 
+#changed
 def create_opportunity(
-    db:             Session,
+    db: Session,
     opportunity_in: OpportunityCreate,
-    company_id:     UUID,
 ) -> Opportunity:
+
+    # 1. Find company by name
+    company = db.query(Company).filter(
+        Company.name.ilike(opportunity_in.company_name)
+    ).first()
+
+    # 2. If not exists → create
+    if not company:
+        company = Company(
+            name=opportunity_in.company_name
+        )
+        db.add(company)
+        db.commit()
+        db.refresh(company)
+
+    # 3. Create opportunity
+    data = opportunity_in.model_dump()
+    data.pop("company_name", None)
+
     opportunity = Opportunity(
-        **opportunity_in.model_dump(),  
-        company_id=company_id,          
+        **data,
+        company_id=company.id,
+        company_name=company.name,
+
+        # auto logic
+        is_accepting_applications=True if data.get("status", "draft") == "active" else False
     )
+
     db.add(opportunity)
     db.commit()
     db.refresh(opportunity)
+
+    opportunity.company_name = company.name  # inject for output
     return opportunity
 
 
@@ -33,6 +60,8 @@ def get_opportunity(db: Session, opportunity_id: UUID) -> Opportunity:
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Opportunity not found",
         )
+    company = db.query(Company).filter(Company.id == opportunity.company_id).first()
+    opportunity.company_name = company.name if company else None
     return opportunity
 
 
@@ -41,13 +70,20 @@ def get_opportunities(
     skip:  int = 0,
     limit: int = 10,
 ) -> list[Opportunity]:
-    return (
-        db.query(Opportunity)
-        .order_by(Opportunity.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    opportunities = (
+    db.query(Opportunity)
+    .order_by(Opportunity.created_at.desc())
+    .offset(skip)
+    .limit(limit)
+    .all()
+)
+
+# 🔽 ADD THIS LOOP
+    for op in opportunities:
+        company = db.query(Company).filter(Company.id == op.company_id).first()
+        op.company_name = company.name if company else None
+
+    return opportunities
 
 
 def get_opportunities_by_company(
@@ -94,8 +130,17 @@ def update_opportunity(
 ) -> Opportunity:
     opportunity = get_opportunity(db, opportunity_id)
 
-    for field, value in opportunity_in.model_dump(exclude_unset=True).items():
+    data = opportunity_in.model_dump(exclude_unset=True)
+
+# update fields
+    for field, value in data.items():
         setattr(opportunity, field, value)
+
+    # 🔽 ADD THIS BLOCK (auto logic)
+    if "status" in data:
+        opportunity.is_accepting_applications = (
+        True if data["status"] == "active" else False
+    )
 
     db.commit()
     db.refresh(opportunity)
