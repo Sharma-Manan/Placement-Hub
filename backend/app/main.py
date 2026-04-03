@@ -10,6 +10,7 @@ from app.routers.upload import upload_router
 from app.routers.opportunity import opportunity_router
 from app.routers.application import application_router
 from app.routers.eligibility import eligibility_router
+from app.routers.event import router as event_router
 
 
 app = FastAPI()
@@ -42,3 +43,4 @@ app.include_router(upload_router)
 app.include_router(opportunity_router)
 app.include_router(eligibility_router)
 app.include_router(application_router)
+app.include_router(event_router)
