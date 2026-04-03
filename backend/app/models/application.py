@@ -36,6 +36,12 @@ class Application(Base):
         default="applied"
     )
 
+    # 🔥 Student Snapshot (denormalized data)
+    student_name = Column(String, nullable=False)
+    student_email = Column(String, nullable=False)
+    student_cgpa = Column(String, nullable=True)
+    student_department = Column(String, nullable=True)
+
     created_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),

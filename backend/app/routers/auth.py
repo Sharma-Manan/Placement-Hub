@@ -15,6 +15,11 @@ from app.core.security import (
     verify_refresh_token,
 )
 
+allowed_coordinators = [
+    "tpo@college.edu",
+    "admin@college.edu"
+]
+
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=TokenResponse)
@@ -25,6 +30,13 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
+        )
+    
+    #  Restrict coordinator registration
+    if payload.role == "coordinator" and payload.email not in allowed_coordinators:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not authorized to register as coordinator"
         )
 
     # 2. Hash password
@@ -80,6 +92,13 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Account disabled",
+        )
+    
+    #  Restrict coordinator login
+    if user.role == "coordinator" and user.email not in allowed_coordinators:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not authorized to login as coordinator"
         )
 
     access_token = create_access_token(user_id=user.id, role=user.role)
