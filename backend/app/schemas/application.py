@@ -12,11 +12,16 @@ from pydantic import BaseModel
 # -----------------------------
 class ApplicationOut(BaseModel):
     id: UUID
-    student_id: UUID
     opportunity_id: UUID
+
+    # 🔥 Student Snapshot (frontend required)
+    student_name: str
+    student_email: str
+    student_cgpa: Optional[str] = None
+    student_department: Optional[str] = None
+
     status: str
     created_at: datetime
-    updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -25,7 +30,15 @@ class ApplicationOut(BaseModel):
 # 2. Status Update (Coordinator)
 # -----------------------------
 class ApplicationStatusUpdate(BaseModel):
-    status: Literal["applied", "shortlisted", "rejected", "selected"]
+    status: Literal[
+        "applied",
+        "shortlisted",
+        "test_scheduled",
+        "interviewed",
+        "offered",
+        "accepted",
+        "rejected"
+    ]
 
 
 # -----------------------------

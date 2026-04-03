@@ -53,6 +53,7 @@ class Student(Base):
     portfolio_url = Column(String)
 
     placement_status = Column(String, default="unplaced")
+    has_accepted_offer = Column(Boolean, default=False)
     is_profile_complete = Column(Boolean, default=False)
 
     created_at = Column(
