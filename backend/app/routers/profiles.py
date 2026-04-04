@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
@@ -6,8 +6,13 @@ from app.models.student import Student
 from app.models.coordinator import Coordinator
 from app.models.user import User
 from app.schemas.profiles import StudentProfileCreate, CoordinatorProfileCreate  # CompanyProfileCreate
+from app.schemas.placed_student import PlacedStudentListOut
 from app.core.security import get_current_user
-from fastapi import status
+from app.core.dependencies import require_coordinator
+from app.schemas.auth import CurrentUser
+from app.crud.placed_students import  get_all_placed_students
+
+
 
 
 student_profile_create = APIRouter(prefix="/student", tags=["Student"])
@@ -71,3 +76,6 @@ def create_coordinator_profile(
     db.refresh(coordinator)
 
     return {"message": "Coordinator profile created", "profile": coordinator}
+
+
+

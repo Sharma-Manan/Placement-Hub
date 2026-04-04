@@ -32,8 +32,8 @@ class Coordinator(Base):
 
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
+    profile_photo_url = Column(String, nullable=True) 
 
-    # Only one coordinator should be primary (enforced via partial unique index in DB)
     is_primary = Column(Boolean, default=False)
 
     created_at = Column(
