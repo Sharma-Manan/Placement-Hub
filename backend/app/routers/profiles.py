@@ -71,6 +71,24 @@ async def get_student_profile(
         "profile_photo_url": current_user.profile_photo_url,
     }
 
+@student_profile_create.patch("/profile/photo")
+async def update_profile_photo(
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(require_student)
+):
+    student = db.query(Student).filter_by(user_id=current_user.id).first()
+
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    student.profile_photo_url = payload.get("profile_photo_url")
+
+    db.commit()
+    db.refresh(student)
+
+    return {"profile_photo_url": student.profile_photo_url}
+
 
 @student_profile_create.get("/conflicts")
 def get_conflicts(
@@ -159,6 +177,23 @@ async def get_coordinator_profile(
         "profile_photo_url": current_user.profile_photo_url,
     }
 
+@coordinator_profile_create.patch("/profile/photo")
+async def update_profile_photo(
+    payload: dict,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(require_coordinator)
+):
+    coordinator = db.query(Coordinator).filter_by(user_id=current_user.id).first()
+
+    if not coordinator:
+        raise HTTPException(status_code=404, detail="Coordinator profile not found")
+
+    coordinator.profile_photo_url = payload.get("profile_photo_url")
+
+    db.commit()
+    db.refresh(coordinator)
+
+    return {"profile_photo_url": coordinator.profile_photo_url}
 
 @coordinator_profile_create.get(
     "/placed", response_model=list[PlacedStudentListOut]
