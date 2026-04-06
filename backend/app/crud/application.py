@@ -54,9 +54,13 @@ def apply_to_opportunity(db: Session, student_id: str, opportunity_id: str) -> A
         raise HTTPException(status_code=409, detail="Already applied to this opportunity")
 
     # 5. Eligibility check
-    is_eligible = check_eligibility(student, opportunity,db)
+    is_eligible, reason = check_eligibility(student, opportunity, db)
+
     if not is_eligible:
-        raise HTTPException(status_code=403, detail="You are not eligible for this opportunity")
+        raise HTTPException(
+            status_code=403,
+            detail=reason
+        )
 
     # 6. Create application
     application = Application(
@@ -108,7 +112,7 @@ def get_my_applications(db: Session, student_id: str):
             "created_at": app.created_at,
             "opportunity_id": opportunity.id,
             "opportunity_title": opportunity.title,
-            "company_name": opportunity.company_name,  # 🔥 FIX
+            "company_name": opportunity.company_name, 
             "application_deadline": opportunity.application_deadline
         })
 

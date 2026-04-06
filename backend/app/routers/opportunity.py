@@ -100,4 +100,4 @@ def get_opportunity_by_id(
 #             status_code=status.HTTP_403_FORBIDDEN,
 #             detail="Only students can access eligible opportunities"
 #         )
-#     return crud_get_eligible_opportunities(db, current_user.id)
+#     return crud_get_eligible_opportunities(db, current_user.id)9+

@@ -1,5 +1,5 @@
 from pydantic import BaseModel, HttpUrl
-from typing import Literal
+from typing import Literal, Optional
 
 class StudentProfileCreate(BaseModel):
     first_name: str
@@ -16,12 +16,14 @@ class StudentProfileCreate(BaseModel):
     linkedin_url: HttpUrl
     github_url: HttpUrl
     portfolio_url: HttpUrl
+    profile_photo_url: Optional[str] = None   
     placement_status: Literal["placed", "unplaced", "offer_received"] = "unplaced"
     is_profile_complete: bool = False
 
 class CoordinatorProfileCreate(BaseModel):
     first_name: str
     last_name: str
+    profile_photo_url: Optional[str] = None   
     is_primary: bool = True
 
 class CompanyProfileCreate(BaseModel):

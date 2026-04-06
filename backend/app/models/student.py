@@ -51,6 +51,7 @@ class Student(Base):
     linkedin_url = Column(String)
     github_url = Column(String)
     portfolio_url = Column(String)
+    profile_photo_url = Column(String, nullable=True) 
 
     placement_status = Column(String, default="unplaced")
     has_accepted_offer = Column(Boolean, default=False)
