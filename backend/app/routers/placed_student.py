@@ -1,6 +1,14 @@
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
+from app.core.dependencies import require_coordinator
+
 from app.models.placed_student import PlacedStudent
 from app.models.student import Student
+from app.models.wall_of_fame import WallOfFame
 
+router = APIRouter(tags=["Placed Students"])
 @router.get("/placed/search")
 def search_placed_students(
     roll: str = Query(..., min_length=1),

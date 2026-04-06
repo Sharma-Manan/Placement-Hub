@@ -12,6 +12,7 @@ from app.routers.application import application_router
 from app.routers.eligibility import eligibility_router
 from app.routers.wall_of_fame import wall_of_fame_router
 from app.routers.event import router as event_router
+from app.routers.placed_student import router as placed_router
 
 
 app = FastAPI()
@@ -50,3 +51,4 @@ app.include_router(eligibility_router)
 app.include_router(application_router)
 app.include_router(wall_of_fame_router, prefix="/api")
 app.include_router(event_router)
+app.include_router(placed_router)
