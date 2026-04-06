@@ -13,6 +13,7 @@ from app.schemas.application import ApplicationStatusUpdate
 
 from app.services.eligibility import check_eligibility
 from app.models.student import Student
+from app.models.placed_student import PlacedStudent
 
 
 # --------------------------------------------------
@@ -170,6 +171,36 @@ def update_application_status(
         student = db.query(Student).filter(Student.id == application.student_id).first()
         if student:
             student.has_accepted_offer = True
+            student.placement_status = "placed"
+
+    # 2. Check duplicate (important)
+    existing = db.query(PlacedStudent).filter(
+        PlacedStudent.application_id == application.id
+    ).first()
+
+    if not existing:
+
+        # 3. Get opportunity (for company + role)
+        opportunity = db.query(Opportunity).filter(
+            Opportunity.id == application.opportunity_id
+        ).first()
+
+        if not opportunity:
+            raise HTTPException(
+                status_code=400,
+                detail="Opportunity not found for this application"
+            )
+
+        placed = PlacedStudent(
+            student_id=application.student_id,
+            opportunity_id=application.opportunity_id,
+            application_id=application.id,
+            company_name=opportunity.company_name if opportunity else "Unknown",
+            role=opportunity.title if opportunity else "Unknown",
+            ctc_lpa=opportunity.ctc_lpa if opportunity else None
+        )
+
+        db.add(placed)
 
     db.commit()
     db.refresh(application)

@@ -33,3 +33,25 @@ class CompanyProfileCreate(BaseModel):
     industry: str
     description: str
 
+
+class StudentProfileOut(BaseModel):
+    first_name: str
+    last_name: str
+    roll_no: str
+    department_id: int
+    graduation_year: int
+    cgpa: float
+    active_backlogs: int
+    total_backlogs: int
+    tenth_percentage: float
+    twelfth_percentage: float
+    resume_url: Optional[str]
+    linkedin_url: Optional[str]
+    github_url: Optional[str]
+    portfolio_url: Optional[str]
+    placement_status: Optional[str]
+    is_profile_complete: bool
+    profile_photo_url: Optional[str]
+
+    class Config:
+        from_attributes = True   # VERY IMPORTANT (for SQLAlchemy)
