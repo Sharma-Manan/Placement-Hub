@@ -129,10 +129,10 @@ from app.models.student import Student
 from app.schemas.wall_of_fame import WallOfFameEnhanced, WallOfFameCreate, WallOfFameUpdate
 from app.core.dependencies import require_coordinator
 
-router = APIRouter(prefix="/api/wall-of-fame", tags=["Wall of Fame"])
+wall_of_fame_router = APIRouter(prefix="/api/wall-of-fame", tags=["Wall of Fame"])
 
 
-@router.get(
+@wall_of_fame_router.get(
     "/",
     response_model=List[WallOfFameEnhanced],
     summary="List Wall of Fame",
@@ -211,7 +211,7 @@ def list_wall_of_fame(
     return result
 
 
-@router.post(
+@wall_of_fame_router.post(
     "/",
     response_model=dict,
     status_code=status.HTTP_201_CREATED,
@@ -272,7 +272,7 @@ def add_to_wall(
     }
 
 
-@router.patch(
+@wall_of_fame_router.patch(
     "/{entry_id}",
     response_model=dict,
     summary="Update Wall Entry",
@@ -315,7 +315,7 @@ def update_wall_entry(
     }
 
 
-@router.delete(
+@wall_of_fame_router.delete(
     "/{entry_id}",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove from Wall",
