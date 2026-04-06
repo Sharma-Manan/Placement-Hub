@@ -14,6 +14,7 @@ from app.schemas.auth import CurrentUser
 from app.core.dependencies import require_coordinator, require_student
 from app.crud.placed_students import get_all_placed_students
 from app.services.conflict_service import get_student_conflicts
+from app.schemas.profiles import StudentProfileOut
 
 student_profile_create = APIRouter(prefix="/student", tags=["Student"])
 coordinator_profile_create = APIRouter(prefix="/coordinator", tags=["Coordinator"])
@@ -47,32 +48,20 @@ def upsert_student_profile(
     return {"message": "Student profile created", "profile": student}
 
 
-@student_profile_create.get("/profile")
-async def get_student_profile(
+@student_profile_create.get("/profile", response_model=StudentProfileOut)
+def get_student_profile(
+    db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(require_student),
 ):
-    return {
-        "first_name": current_user.first_name,
-        "last_name": current_user.last_name,
-        "roll_no": current_user.roll_no,
-        "department_id": current_user.department_id,
-        "graduation_year": current_user.graduation_year,
-        "cgpa": current_user.cgpa,
-        "active_backlogs": current_user.active_backlogs,
-        "total_backlogs": current_user.total_backlogs,
-        "tenth_percentage": current_user.tenth_percentage,
-        "twelfth_percentage": current_user.twelfth_percentage,
-        "resume_url": current_user.resume_url,
-        "linkedin_url": current_user.linkedin_url,
-        "github_url": current_user.github_url,
-        "portfolio_url": current_user.portfolio_url,
-        "placement_status": current_user.placement_status,
-        "is_profile_complete": current_user.is_profile_complete,
-        "profile_photo_url": current_user.profile_photo_url,
-    }
+    student = db.query(Student).filter_by(user_id=current_user.id).first()
+
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    return student
 
 @student_profile_create.patch("/profile/photo")
-async def update_profile_photo(
+async def update_student_profile_photo(
     payload: dict,
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(require_student)
@@ -178,7 +167,7 @@ async def get_coordinator_profile(
     }
 
 @coordinator_profile_create.patch("/profile/photo")
-async def update_profile_photo(
+async def update_coordinator_profile_photo(
     payload: dict,
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(require_coordinator)
