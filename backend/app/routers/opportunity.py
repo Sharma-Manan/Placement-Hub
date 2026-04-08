@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
+from datetime import datetime
 
 from app.models.student import Student
 from app.models.opportunity import Opportunity
@@ -11,6 +12,7 @@ from app.schemas.auth import CurrentUser
 from app.core.dependencies import require_coordinator, require_student
 from app.db.session import get_db
 from app.schemas.opportunity import (OpportunityCreate, OpportunityUpdate, OpportunityOut, OpportunityOutStudent)
+from app.models.eligibility_rules import EligibilityRules
 from app.crud.opportunity import (
     create_opportunity as crud_create_opportunity,
     get_opportunity as crud_get_opportunity,
@@ -92,58 +94,61 @@ def get_student_opportunities(
     
     # 2. Get all active opportunities
     opportunities = db.query(Opportunity).filter(
-        Opportunity.is_accepting_applications == True
+        Opportunity.status == "active",
+        Opportunity.application_deadline > datetime.utcnow()
     ).offset(skip).limit(limit).all()
     
     # 3. Enrich each opportunity with student-specific data
     result = []
     
+    from app.models.eligibility_rules import EligibilityRules
+
     for opp in opportunities:
         # Check if student has already applied
         existing_application = db.query(Application).filter(
             Application.student_id == student.id,
             Application.opportunity_id == opp.id
         ).first()
-        
+
         has_applied = existing_application is not None
-        
+
         # Check eligibility
         is_eligible = True
         ineligible_reason = None
-        
-        if opp.eligibility:
+
+        # ✅ Fetch rules properly (NOT opp.eligibility)
+        rules = db.query(EligibilityRules).filter(
+            EligibilityRules.opportunity_id == opp.id
+        ).first()
+
+        if rules:
             # CGPA Check
-            min_cgpa = opp.eligibility.get("min_cgpa")
-            if min_cgpa is not None:
-                if student.cgpa < min_cgpa:
+            if rules.min_cgpa is not None:
+                if student.cgpa < rules.min_cgpa:
                     is_eligible = False
-                    ineligible_reason = f"Minimum CGPA {min_cgpa} required (You have {student.cgpa})"
-            
+                    ineligible_reason = f"Minimum CGPA {rules.min_cgpa} required (You have {student.cgpa})"
+
             # Backlogs Check
-            max_backlogs = opp.eligibility.get("max_backlogs")
-            if max_backlogs is not None and is_eligible:
-                if student.active_backlogs > max_backlogs:
+            if rules.max_backlogs is not None and is_eligible:
+                if student.active_backlogs > rules.max_backlogs:
                     is_eligible = False
-                    ineligible_reason = f"Maximum {max_backlogs} backlogs allowed (You have {student.active_backlogs})"
-            
+                    ineligible_reason = f"Maximum {rules.max_backlogs} backlogs allowed (You have {student.active_backlogs})"
+
             # Department Check
-            allowed_depts = opp.eligibility.get("allowed_depts", [])
-            if allowed_depts and is_eligible:
-                if student.department_id not in allowed_depts:
+            if rules.allowed_depts and is_eligible:
+                if student.department_id not in rules.allowed_depts:
                     is_eligible = False
-                    ineligible_reason = f"Only {', '.join(allowed_depts)} departments are eligible"
-            
-            # Batch/Graduation Year Check
-            allowed_batches = opp.eligibility.get("allowed_batches", [])
-            if allowed_batches and is_eligible:
-                if student.graduation_year not in allowed_batches:
+                    ineligible_reason = f"Only {', '.join(rules.allowed_depts)} departments are eligible"
+
+            # Batch Check
+            if rules.allowed_batches and is_eligible:
+                if student.graduation_year not in rules.allowed_batches:
                     is_eligible = False
-                    ineligible_reason = f"Only batches {', '.join(map(str, allowed_batches))} are eligible"
-            
+                    ineligible_reason = f"Only batches {', '.join(map(str, rules.allowed_batches))} are eligible"
+
             # Prior Offer Check
-            no_prior_offer = opp.eligibility.get("no_prior_offer", False)
-            if no_prior_offer and is_eligible:
-                if student.placement_status == "placed":
+            if rules.no_prior_offer and is_eligible:
+                if student.placement_status != "unplaced":
                     is_eligible = False
                     ineligible_reason = "Only unplaced students can apply"
         
