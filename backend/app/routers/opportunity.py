@@ -66,7 +66,6 @@ def delete_opportunity(
 
 @opportunity_router.get(
     "/student/opportunities",
-    response_model=List[OpportunityOutStudent],
     summary="Get Opportunities for Student",
     description="Returns all active opportunities with eligibility check and application status for the logged-in student"
 )
