@@ -154,18 +154,19 @@ def get_student_opportunities(
         
         # Build response object
         opp_dict = {
-            "id": str(opp.id),
+            "id": opp.id,   # ✅ FIXED
             "title": opp.title,
+            "company_id": opp.company_id,   # ✅ REQUIRED
             "company_name": opp.company_name,
             "description": opp.description,
             "location": opp.location,
             "ctc_lpa": opp.ctc_lpa,
             "application_deadline": opp.application_deadline,
-            "eligibility": opp.eligibility,
-            "is_accepting_applications": opp.is_accepting_applications,
+            "status": opp.status,   # ✅ REQUIRED
             "created_at": opp.created_at,
             "updated_at": opp.updated_at,
-            # Student-specific fields
+
+            # student-specific
             "has_applied": has_applied,
             "is_eligible": is_eligible,
             "ineligible_reason": ineligible_reason,
