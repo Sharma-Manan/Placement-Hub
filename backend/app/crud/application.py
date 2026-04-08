@@ -36,7 +36,7 @@ def apply_to_opportunity(db: Session, student_id: str, opportunity_id: str) -> A
         raise HTTPException(status_code=404, detail="Student not found")
     
     # 🔥 Block if already accepted an offer
-    if student.has_accepted_offer:
+    if student.placement_status != "unplaced":
         raise HTTPException(
             status_code=400,
             detail="You have already accepted an offer"
