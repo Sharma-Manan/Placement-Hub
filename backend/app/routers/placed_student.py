@@ -38,3 +38,28 @@ def search_placed_students(
         }
         for ps, st in results
     ]
+
+
+@router.get("/placed")
+def get_all_placed_students(
+    db: Session = Depends(get_db),
+    _ = Depends(require_coordinator),
+):
+    results = (
+        db.query(PlacedStudent, Student)
+        .join(Student, PlacedStudent.student_id == Student.id)
+        .all()
+    )
+
+    return [
+        {
+            "placed_student_id": ps.id,
+            "student_name": f"{st.first_name} {st.last_name}",
+            "company_name": ps.company_name,
+            "role": ps.role,
+            "ctc_lpa": ps.ctc_lpa,
+            "already_on_wall": db.query(WallOfFame)
+                .filter_by(placed_student_id=ps.id).first() is not None,
+        }
+        for ps, st in results
+    ]
