@@ -31,6 +31,10 @@ def check_eligibility(student, opportunity, db: Session):
         if student.graduation_year not in rules.allowed_batches:
             return False, f"Only batches {rules.allowed_batches} allowed"
 
+    if rules.allowed_branches:
+        if student.branch not in rules.allowed_branches:
+            return False, "Your branch is not eligible"
+
     
     if rules.no_prior_offer:
         if student.placement_status != "unplaced":

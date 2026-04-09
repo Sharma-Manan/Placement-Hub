@@ -19,6 +19,8 @@ class BranchEnum(str, Enum):
     BCOM_HONS = "B.Com"
     MBA = "MBA"
 
+
+
 class StudentProfileCreate(BaseModel):
     first_name: str
     last_name: str

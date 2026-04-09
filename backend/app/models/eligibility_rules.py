@@ -15,6 +15,7 @@ class EligibilityRules(Base):
     min_cgpa        = Column(Float, nullable=True)
     max_backlogs    = Column(Integer, nullable=True)
     allowed_depts   = Column(ARRAY(Text), nullable=True)
+    allowed_branches = Column(ARRAY(Text), nullable=True)
     allowed_batches = Column(ARRAY(Integer), nullable=True)
     no_prior_offer  = Column(Boolean, nullable=False, default=False)
 
