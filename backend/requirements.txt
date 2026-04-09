@@ -9,7 +9,7 @@ python-jose
 pydantic[email]
 bcrypt
 python-multipart
-
+cloudinary
 
 
 

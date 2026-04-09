@@ -34,7 +34,8 @@ class Student(Base):
     linkedin_url = Column(String)
     github_url = Column(String)
     portfolio_url = Column(String)
-    profile_photo_url = Column(String)
+    profile_photo_url = Column(String, nullable=True)
+    profile_photo_public_id = Column(String, nullable=True)
     
     # Placement status
     placement_status = Column(String, default="unplaced")  # unplaced, placed, opted_out

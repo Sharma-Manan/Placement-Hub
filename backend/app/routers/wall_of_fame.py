@@ -129,7 +129,7 @@ from app.models.student import Student
 from app.schemas.wall_of_fame import WallOfFameEnhanced, WallOfFameCreate, WallOfFameUpdate
 from app.core.dependencies import require_coordinator
 
-wall_of_fame_router = APIRouter(prefix="/api/wall-of-fame", tags=["Wall of Fame"])
+wall_of_fame_router = APIRouter(prefix="wall-of-fame", tags=["Wall of Fame"])
 
 
 @wall_of_fame_router.get(

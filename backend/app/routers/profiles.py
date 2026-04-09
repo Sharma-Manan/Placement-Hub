@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException,UploadFile, File
 from sqlalchemy.orm import Session
 from datetime import timedelta
 
@@ -7,6 +7,7 @@ from app.models.student import Student
 from app.models.coordinator import Coordinator
 from app.models.opportunity import Opportunity
 
+from app.services.cloudinary_service import CloudinaryService
 from app.schemas.profiles import StudentProfileCreate, CoordinatorProfileCreate
 from app.schemas.placed_student import PlacedStudentListOut
 from app.schemas.auth import CurrentUser
@@ -57,27 +58,43 @@ def get_student_profile(
 
     if not student:
         raise HTTPException(status_code=404, detail="Student profile not found")
-
     return student
+
 
 @student_profile_create.patch("/profile/photo")
 async def update_student_profile_photo(
-    payload: dict,
+    file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: CurrentUser = Depends(require_student)
 ):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files allowed")
+
+    contents = await file.read()
+    if len(contents) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 2MB)")
+
+    file.file.seek(0)
+
     student = db.query(Student).filter_by(user_id=current_user.id).first()
 
     if not student:
         raise HTTPException(status_code=404, detail="Student profile not found")
 
-    student.profile_photo_url = payload.get("profile_photo_url")
+    if student.profile_photo_public_id:
+        CloudinaryService.delete_image(student.profile_photo_public_id)
+
+    upload_result = CloudinaryService.upload_image(file.file)
+
+    student.profile_photo_url = upload_result["url"]
+    student.profile_photo_public_id = upload_result["public_id"]
 
     db.commit()
     db.refresh(student)
 
-    return {"profile_photo_url": student.profile_photo_url}
-
+    return {
+        "profile_photo_url": student.profile_photo_url
+    }
 
 @student_profile_create.get("/conflicts")
 def get_conflicts(

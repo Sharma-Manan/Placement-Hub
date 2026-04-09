@@ -1,8 +1,9 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 import os
 from supabase import create_client, Client
-from app.core.config import origins
+from app.core.config import origins, init_cloudinary 
 from app.routers.auth import router
 from app.routers.profiles import student_profile_create, coordinator_profile_create
 from app.routers.company import company_router
@@ -16,6 +17,16 @@ from app.routers.placed_student import router as placed_router
 
 
 app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_cloudinary()
+    print("✅ Cloudinary initialized")
+
+    yield  
+    print("🛑 App shutting down")
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,  # Vite frontend
