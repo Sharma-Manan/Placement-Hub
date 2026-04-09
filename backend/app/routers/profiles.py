@@ -201,6 +201,48 @@ async def update_coordinator_profile_photo(
 
     return {"profile_photo_url": coordinator.profile_photo_url}
 
+
+
+@coordinator_profile_create.patch("/admin/photo")
+async def update_admin_photo(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(require_coordinator)
+):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Only image files allowed")
+
+    contents = await file.read()
+    if len(contents) > 2 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 2MB)")
+
+    file.file.seek(0)
+
+    admin = db.query(Coordinator).filter_by(id=current_user.id).first()
+
+    if not admin:
+        raise HTTPException(status_code=404, detail="Admin not found")
+
+    if admin.profile_photo_public_id:
+        CloudinaryService.delete_image(admin.profile_photo_public_id)
+
+    upload_result = CloudinaryService.upload_image(
+        file.file,
+        folder="admin_photos"
+    )
+
+    admin.profile_photo_url = upload_result["url"]
+    admin.profile_photo_public_id = upload_result["public_id"]
+
+    db.commit()
+    db.refresh(admin)
+
+    return {
+        "profile_photo_url": admin.profile_photo_url
+    }
+
+
+
 @coordinator_profile_create.get(
     "/placed", response_model=list[PlacedStudentListOut]
 )
