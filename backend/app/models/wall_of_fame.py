@@ -45,7 +45,7 @@ class WallOfFame(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     placed_student_id = Column(
         UUID(as_uuid=True), 
-        ForeignKey("students.id", ondelete="CASCADE"),
+        ForeignKey("placed_students.id", ondelete="CASCADE"),
         nullable=False,
         unique=True  # Each student can only be in wall once
     )

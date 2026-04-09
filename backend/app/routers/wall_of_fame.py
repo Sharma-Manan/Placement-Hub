@@ -9,6 +9,7 @@ from app.models.wall_of_fame import WallOfFame
 from app.models.student import Student
 from app.schemas.wall_of_fame import WallOfFameEnhanced, WallOfFameCreate, WallOfFameUpdate
 from app.core.dependencies import require_coordinator
+from app.models.placed_student import PlacedStudent
 
 wall_of_fame_router = APIRouter(prefix="/wall-of-fame", tags=["Wall of Fame"])
 
@@ -52,8 +53,15 @@ def list_wall_of_fame(
     
     for entry in wall_entries:
         # Get student details
+        ps = db.query(PlacedStudent).filter(
+            PlacedStudent.id == entry.placed_student_id
+        ).first()
+
+        if not ps:
+            continue
+
         student = db.query(Student).filter(
-            Student.id == entry.placed_student_id
+            Student.id == ps.student_id
         ).first()
         
         if not student:
