@@ -56,3 +56,8 @@ class ApplicationOutStudent(BaseModel):
     application_deadline: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+
+class BulkShortlistRequest(BaseModel):
+    student_ids: list[str]
