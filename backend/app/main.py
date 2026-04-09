@@ -16,7 +16,7 @@ from app.routers.event import router as event_router
 from app.routers.placed_student import router as placed_router
 
 
-app = FastAPI()
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,6 +25,8 @@ async def lifespan(app: FastAPI):
 
     yield  
     print("🛑 App shutting down")
+
+app = FastAPI(lifespan=lifespan)
 
 
 app.add_middleware(

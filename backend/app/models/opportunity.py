@@ -3,6 +3,7 @@ from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.sql import func
 import uuid
 from sqlalchemy import Boolean
+from sqlalchemy.dialects.postgresql import ARRAY
 
 from app.db.base import Base
 
@@ -23,6 +24,10 @@ class Opportunity(Base):
     location    = Column(Text)
     ctc_lpa     = Column(Text)  # was salary
     status      = Column(String, nullable=False, default="draft")  # was missing
+    branch = Column(ARRAY(String), nullable=True)
+    jd_url = Column(Text, nullable=True)           # uploaded file URL
+    company_url = Column(Text, nullable=True)
+    company_logo = Column(Text, nullable=True)
 
     application_deadline = Column(DateTime(timezone=True), nullable=False)
 

@@ -31,10 +31,11 @@ def create_opportunity(
 
     # 3. Create opportunity
     data = opportunity_in.model_dump()
-    data.pop("company_name", None)
+    branches =  data.pop("branch", None)
 
     opportunity = Opportunity(
         **data,
+        branch=branches,
         company_id=company.id,
         company_name=company.name,
 
