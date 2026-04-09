@@ -33,6 +33,7 @@ class Coordinator(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     profile_photo_url = Column(String, nullable=True) 
+    profile_photo_public_id = Column(String, nullable=True)
 
     is_primary = Column(Boolean, default=False)
 

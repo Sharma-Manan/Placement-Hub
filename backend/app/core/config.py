@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+import cloudinary
 
 load_dotenv()
 
@@ -20,7 +21,12 @@ origins = [origin.strip() for origin in allowed_origins.split(",") if origin.str
 # Password hashing
 BCRYPT_ROUNDS = int(os.getenv("BCRYPT_ROUNDS", 12))
 
-# CORS
+# Cloudinary
 
-
-# Email (future)
+def init_cloudinary():
+    cloudinary.config(
+        cloud_name="CLOUDINARY_NAME",
+        api_key="CLUODINARY_API",
+        api_secret="CLUODINARY_API_SECRET",
+        secure=True
+    )
