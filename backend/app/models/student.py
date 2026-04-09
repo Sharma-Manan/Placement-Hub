@@ -99,6 +99,8 @@ class Student(Base):
     roll_no = Column(String, unique=True, nullable=False)
     department_id = Column(String, nullable=False)
     graduation_year = Column(Integer, nullable=False)
+    branch = Column(String, nullable=True)
+
     
     # Academic
     cgpa = Column(Float, nullable=False)

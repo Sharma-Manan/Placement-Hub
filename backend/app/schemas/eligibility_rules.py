@@ -10,6 +10,7 @@ class EligibilityRulesBase(BaseModel):
     max_backlogs:    Optional[int]       = None
     allowed_depts:   Optional[list[str]] = None
     allowed_batches: Optional[list[int]] = None
+    allowed_branches: Optional[list[str]] = None
     no_prior_offer:  bool                = False  # default False, not None
 
     @field_validator("min_cgpa")

@@ -1,11 +1,32 @@
 from pydantic import BaseModel, HttpUrl
 from typing import Literal, Optional
 
+from enum import Enum
+
+class BranchEnum(str, Enum):
+    AE = "AE"
+    CE = "CE"
+    CSE = "CSE"
+    EE = "EE"
+    IT = "IT"
+    ME = "ME"
+    MT = "MT"
+
+    ICT = "ICT"
+
+    BBA = "BBA"
+    BBA_HONS = "BBA (Hons)"
+    BCOM_HONS = "B.Com"
+    MBA = "MBA"
+
+
+
 class StudentProfileCreate(BaseModel):
     first_name: str
     last_name: str
     roll_no: str
     department_id: str
+    branch: BranchEnum
     graduation_year: int
     cgpa: float  
     active_backlogs: int
@@ -39,6 +60,7 @@ class StudentProfileOut(BaseModel):
     last_name: str
     roll_no: str
     department_id: int
+    branch : BranchEnum
     graduation_year: int
     cgpa: float
     active_backlogs: int
