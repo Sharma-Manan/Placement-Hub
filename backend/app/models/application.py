@@ -41,6 +41,7 @@ class Application(Base):
     student_email = Column(String, nullable=False)
     student_cgpa = Column(String, nullable=True)
     student_department = Column(String, nullable=True)
+    student_resume_url = Column(String, nullable=True)
 
     created_at = Column(
         DateTime(timezone=True),
