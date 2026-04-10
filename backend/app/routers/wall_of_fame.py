@@ -86,10 +86,11 @@ def list_wall_of_fame(
             "cgpa": student.cgpa,
             
             # Placement details (if you have these fields in Student model)
-            "company_name": getattr(student, 'placed_company_name', None),
-            "ctc_lpa": getattr(student, 'placed_ctc_lpa', None),
-            "placed_at": getattr(student, 'placed_at', None),
-            
+            # ✅ CORRECT — get from PlacedStudent
+            "company_name": ps.company_name,
+            "ctc_lpa": ps.ctc_lpa,
+            "placed_at": ps.placed_at,
+                        
             # LinkedIn/GitHub for contact
             "linkedin_url": student.linkedin_url,
             "github_url": student.github_url,

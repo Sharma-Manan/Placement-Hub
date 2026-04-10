@@ -41,7 +41,7 @@ class WallOfFameEnhanced(BaseModel):
     greeting: str
     is_featured: bool
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime] = None
     
     # Student details
     student_id: UUID
