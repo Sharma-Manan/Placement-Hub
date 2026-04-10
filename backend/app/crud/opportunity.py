@@ -10,46 +10,80 @@ from app.models.company import Company
 
 
 #changed
+# def create_opportunity(
+#     db: Session,
+#     opportunity_in: OpportunityCreate,
+# ) -> Opportunity:
+
+#     # 1. Find company by name
+#     company = db.query(Company).filter(
+#         Company.name.ilike(opportunity_in.company_name)
+#     ).first()
+
+#     # 2. If not exists → create
+#     if not company:
+#         company = Company(
+#             name=opportunity_in.company_name
+#         )
+#         db.add(company)
+#         db.commit()
+#         db.refresh(company)
+
+#     # 3. Create opportunity
+#     data = opportunity_in.model_dump()
+#     branches =  data.pop("branch", None)
+
+#     opportunity = Opportunity(
+#         **data,
+#         #branch=branches,
+#         company_id=company.id,
+#         company_name=company.name,
+
+#         # auto logic
+#         is_accepting_applications=True if data.get("status", "draft") == "active" else False
+#     )
+
+#     db.add(opportunity)
+#     db.commit()
+#     db.refresh(opportunity)
+
+#     opportunity.company_name = company.name  # inject for output
+#     return opportunity
+
 def create_opportunity(
     db: Session,
     opportunity_in: OpportunityCreate,
+    jd_url: str | None = None
 ) -> Opportunity:
 
-    # 1. Find company by name
+    # 1. Find company
     company = db.query(Company).filter(
         Company.name.ilike(opportunity_in.company_name)
     ).first()
 
-    # 2. If not exists → create
+    # 2. Create if not exists
     if not company:
-        company = Company(
-            name=opportunity_in.company_name
-        )
+        company = Company(name=opportunity_in.company_name)
         db.add(company)
         db.commit()
         db.refresh(company)
 
-    # 3. Create opportunity
+    # 3. Prepare data
     data = opportunity_in.model_dump()
-    branches =  data.pop("branch", None)
+    data["jd_url"] = jd_url
 
+    # 4. Create opportunity
     opportunity = Opportunity(
         **data,
-        branch=branches,
         company_id=company.id,
-        company_name=company.name,
-
-        # auto logic
-        is_accepting_applications=True if data.get("status", "draft") == "active" else False
+        company_name=company.name
     )
 
     db.add(opportunity)
     db.commit()
     db.refresh(opportunity)
 
-    opportunity.company_name = company.name  # inject for output
     return opportunity
-
 
 def get_opportunity(db: Session, opportunity_id: UUID) -> Opportunity:
     opportunity = db.query(Opportunity).filter(
@@ -124,8 +158,9 @@ def get_active_opportunities(
     )
 
 
+
 def update_opportunity(
-    db:             Session,
+    db: Session,
     opportunity_id: UUID,
     opportunity_in: OpportunityUpdate,
 ) -> Opportunity:
@@ -133,19 +168,13 @@ def update_opportunity(
 
     data = opportunity_in.model_dump(exclude_unset=True)
 
-# update fields
     for field, value in data.items():
         setattr(opportunity, field, value)
-
-    # 🔽 ADD THIS BLOCK (auto logic)
-    if "status" in data:
-        opportunity.is_accepting_applications = (
-        True if data["status"] == "active" else False
-    )
 
     db.commit()
     db.refresh(opportunity)
     return opportunity
+
 
 
 def delete_opportunity(db: Session, opportunity_id: UUID) -> None:

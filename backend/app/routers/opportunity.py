@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import List
 from uuid import UUID
-from datetime import datetime
+from datetime import datetime, timezone
+from app.utils.supabase_storage import upload_to_supabase
+
 
 from app.models.student import Student
 from app.models.opportunity import Opportunity
@@ -25,18 +27,26 @@ from app.crud.opportunity import (
 opportunity_router = APIRouter(tags=["Opportunities"])
     
 
+from fastapi import UploadFile, File
+from app.utils.supabase_storage import upload_to_supabase
+
 @opportunity_router.post(
     "/opportunities",
     response_model=OpportunityOut,
     status_code=status.HTTP_201_CREATED
 )
 def create_opportunity(
-    payload: OpportunityCreate,
+    payload: OpportunityCreate = Depends(),   # 🔥 important
+    jd_file: UploadFile = File(None),         # 🔥 file input
     db: Session = Depends(get_db),
     _: CurrentUser = Depends(require_coordinator),
 ):
-    return crud_create_opportunity(db, payload)
+    jd_url = None
 
+    if jd_file:
+        jd_url = upload_to_supabase(jd_file)
+
+    return crud_create_opportunity(db, payload, jd_url)
 
 @opportunity_router.patch(
     "/opportunities/{opportunity_id}",
@@ -90,12 +100,11 @@ def get_student_opportunities(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Student profile not found. Please complete your profile first."
         )
-    
+    now = datetime.now(timezone.utc)   
     # 2. Get all active opportunities
     opportunities = db.query(Opportunity).filter(
         Opportunity.status == "active",
-        Opportunity.application_deadline > datetime.utcnow()
-    ).offset(skip).limit(limit).all()
+        Opportunity.application_deadline > now).offset(skip).limit(limit).all()
     
     # 3. Enrich each opportunity with student-specific data
     result = []

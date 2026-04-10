@@ -19,7 +19,7 @@ class OpportunityBase(BaseModel):
     additional_criteria: Optional[str] = None
     ctc_lpa:              float
     application_deadline: datetime
-    branch: Optional[list[str]] = None
+    # branch: Optional[list[str]] = None
     jd_url: Optional[str] = None
     company_url: Optional[str] = None
     company_logo: Optional[str] = None
