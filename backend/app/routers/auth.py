@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from jose import JWTError
 import bcrypt
 from uuid import UUID
+import uuid
+
 
 from app.db.session import get_db
 from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse
@@ -57,6 +59,38 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # ✅ ADD THIS: Auto-create skeleton profile based on role
+    if payload.role == "student":
+        from app.models.student import Student
+        student = Student(
+            user_id=user.id,
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+            roll_no=f"TEMP-{uuid.uuid4()}",          # empty — user fills later
+            department_id="",
+            graduation_year=0,
+            cgpa=0.0,
+            tenth_percentage=0.0,
+            twelfth_percentage=0.0,
+            active_backlogs=0,
+            total_backlogs=0,
+            branch="CSE",
+            is_profile_complete=False,
+            placement_status="unplaced",
+        )
+        db.add(student)
+        db.commit()
+
+    elif payload.role == "coordinator":
+        from app.models.coordinator import Coordinator
+        coordinator = Coordinator(
+            user_id=user.id,
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+        )
+        db.add(coordinator)
+        db.commit()
 
     # 5. Generate tokens
     access_token = create_access_token(user_id=user.id, role=user.role)
