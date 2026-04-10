@@ -10,6 +10,8 @@ from app.models.student import Student
 from app.schemas.wall_of_fame import WallOfFameEnhanced, WallOfFameCreate, WallOfFameUpdate
 from app.core.dependencies import require_coordinator
 from app.models.placed_student import PlacedStudent
+from app.services.notification_service import notify_student, notify_all_coordinators
+from app.models.notification import NotificationType
 
 wall_of_fame_router = APIRouter(prefix="/wall-of-fame", tags=["Wall of Fame"])
 
@@ -157,6 +159,31 @@ def add_to_wall(
     db.add(new_entry)
     db.commit()
     db.refresh(new_entry)
+
+    # ── NOTIFICATIONS ──────────────────────────────
+
+    # Notify student
+    notify_student(
+        db=db,
+        user_id=student.user_id,
+        type=NotificationType.WALL_OF_FAME_ADDED,
+        title="You're on the Wall of Fame! 🏆",
+        message=f"Congratulations! You have been added to the Wall of Fame. Your achievement is now publicly celebrated!",
+    )
+
+    # Notify all coordinators
+    notify_all_coordinators(
+        db=db,
+        type=NotificationType.WALL_OF_FAME_ADDED,
+        title="Wall of Fame Updated",
+        message=f"{student.first_name} {student.last_name} has been added to the Wall of Fame.",
+    )
+
+    return {
+        "id": str(new_entry.id),
+        "message": "Student added to wall of fame successfully",
+        "student_name": f"{student.first_name} {student.last_name}"
+    }
     
     return {
         "id": str(new_entry.id),
