@@ -73,8 +73,8 @@ def apply_to_opportunity(db: Session, student_id: str, opportunity_id: str) -> A
         student_name=f"{student.first_name} {student.last_name}",
         student_email=user.email,  
         student_cgpa=str(student.cgpa) if student.cgpa else None,
-        student_department=student.department_id
-        student_resume_url=student.resume_url or None, 
+        student_department=student.department_id,
+        student_resume_url=student.resume_url or None 
     )
 
     db.add(application)
