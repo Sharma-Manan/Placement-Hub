@@ -33,21 +33,21 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email already registered",
         )
-    
-    # Restrict coordinator registration
+
+    # 2. Restrict coordinator registration
     if payload.role == "coordinator" and payload.email not in allowed_coordinators:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not authorized to register as coordinator"
         )
 
-    # 2. Hash password
+    # 3. Hash password
     hashed_password = bcrypt.hashpw(
         payload.password.encode("utf-8"),
         bcrypt.gensalt(),
     ).decode("utf-8")
 
-    # 3. Create user
+    # 4. Create user
     user = User(
         email=payload.email,
         password_hash=hashed_password,
@@ -57,38 +57,15 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         is_active=True,
     )
     db.add(user)
-    db.flush()  # Get the user.id before creating Student/Coordinator
+    db.flush()  # get user.id before creating Student/Coordinator
 
-    # ✅ 4. CREATE ROLE-SPECIFIC RECORD
+    # 5. Create role-specific record with full skeleton data
     if payload.role == "student":
         student = Student(
             user_id=user.id,
             first_name=payload.first_name,
             last_name=payload.last_name,
-            # All other fields default to NULL/0
-        )
-        db.add(student)
-
-    elif payload.role == "coordinator":
-        coordinator = Coordinator(
-        user_id=user.id,
-        first_name=payload.first_name,  # ✅ From User
-        last_name=payload.last_name,    # ✅ From User
-        is_primary=False,
-        )
-        db.add(coordinator)
-
-    db.commit()
-    db.refresh(user)
-
-    # ✅ ADD THIS: Auto-create skeleton profile based on role
-    if payload.role == "student":
-        from app.models.student import Student
-        student = Student(
-            user_id=user.id,
-            first_name=payload.first_name,
-            last_name=payload.last_name,
-            roll_no=f"TEMP-{uuid.uuid4()}",          # empty — user fills later
+            roll_no=f"TEMP-{uuid.uuid4()}",
             department_id="",
             graduation_year=0,
             cgpa=0.0,
@@ -101,19 +78,21 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
             placement_status="unplaced",
         )
         db.add(student)
-        db.commit()
 
     elif payload.role == "coordinator":
-        from app.models.coordinator import Coordinator
         coordinator = Coordinator(
             user_id=user.id,
             first_name=payload.first_name,
             last_name=payload.last_name,
+            is_primary=False,
         )
         db.add(coordinator)
-        db.commit()
 
-    # 5. Generate tokens
+    # 6. Commit everything together
+    db.commit()
+    db.refresh(user)
+
+    # 7. Generate tokens
     access_token = create_access_token(user_id=user.id, role=user.role)
     refresh_token = create_refresh_token(user_id=user.id)
 
