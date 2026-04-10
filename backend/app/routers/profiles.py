@@ -270,6 +270,8 @@ from app.services.cloudinary_service import CloudinaryService
 from app.schemas.profiles import StudentProfileCreate, CoordinatorProfileCreate
 from app.schemas.placed_student import PlacedStudentListOut
 from app.schemas.auth import CurrentUser
+from pydantic import BaseModel
+from typing import Optional
 
 from app.core.dependencies import require_coordinator, require_student
 from app.crud.placed_students import get_all_placed_students
@@ -307,6 +309,49 @@ def upsert_student_profile(
     db.refresh(student)
     return {"message": "Student profile created", "profile": student}
 
+
+
+class StudentProfilePatch(BaseModel):
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    roll_no: Optional[str] = None
+    department_id: Optional[str] = None
+    branch: Optional[str] = None
+    graduation_year: Optional[int] = None
+    cgpa: Optional[float] = None
+    active_backlogs: Optional[int] = None
+    total_backlogs: Optional[int] = None
+    tenth_percentage: Optional[float] = None
+    twelfth_percentage: Optional[float] = None
+    linkedin_url: Optional[str] = None
+    github_url: Optional[str] = None
+    portfolio_url: Optional[str] = None
+
+@student_profile_create.patch("/profile")
+def patch_student_profile(
+    payload: StudentProfilePatch,
+    db: Session = Depends(get_db),
+    current_user: CurrentUser = Depends(require_student),
+):
+    from sqlalchemy.exc import IntegrityError
+    student = db.query(Student).filter_by(user_id=current_user.id).first()
+    if not student:
+        raise HTTPException(status_code=404, detail="Student profile not found")
+
+    data = payload.model_dump(exclude_unset=True)
+    for key, value in data.items():
+        if key in ["linkedin_url", "github_url", "portfolio_url"] and value:
+            value = str(value)
+        setattr(student, key, value)
+
+    try:
+        db.commit()
+        db.refresh(student)
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="Roll number already taken by another student.")
+
+    return {"message": "Profile updated", "profile": student}
 
 @student_profile_create.get("/profile", response_model=StudentProfileOut)
 def get_student_profile(

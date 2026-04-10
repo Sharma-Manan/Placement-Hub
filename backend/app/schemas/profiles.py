@@ -59,7 +59,7 @@ class StudentProfileOut(BaseModel):
     first_name: str
     last_name: str
     roll_no: str
-    department_id: int
+    department_id: str
     branch : BranchEnum
     graduation_year: int
     cgpa: float
