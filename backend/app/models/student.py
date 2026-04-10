@@ -16,18 +16,17 @@ class Student(Base):
     # Basic info
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
-    roll_no = Column(String, unique=True, nullable=False)
-    department_id = Column(String, nullable=False)
-    graduation_year = Column(Integer, nullable=False)
+    roll_no = Column(String, unique=True, nullable=True)  # ✅ CHANGED
+    department_id = Column(String, nullable=True)  # ✅ CHANGED
+    graduation_year = Column(Integer, nullable=True)  # ✅ CHANGED
     branch = Column(String, nullable=True)
 
-    
     # Academic
-    cgpa = Column(Float, nullable=False)
+    cgpa = Column(Float, default=0.0)  # ✅ CHANGED
     active_backlogs = Column(Integer, default=0)
     total_backlogs = Column(Integer, default=0)
-    tenth_percentage = Column(Float, nullable=False)
-    twelfth_percentage = Column(Float, nullable=False)
+    tenth_percentage = Column(Float, default=0.0)  # ✅ CHANGED
+    twelfth_percentage = Column(Float, default=0.0)  # ✅ CHANGED
     
     # Documents & Links
     resume_url = Column(String)
