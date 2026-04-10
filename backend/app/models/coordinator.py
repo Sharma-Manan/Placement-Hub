@@ -30,8 +30,11 @@ class Coordinator(Base):
         index=True,
     )
 
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
+    # ✅ CHANGED: first_name and last_name now get it from User
+    # So we don't need to duplicate them here
+    # But if you want to keep them, make them nullable
+    first_name = Column(String, nullable=True)  # ✅ CHANGED
+    last_name = Column(String, nullable=True)  # ✅ CHANGED
     profile_photo_url = Column(String, nullable=True) 
     profile_photo_public_id = Column(String, nullable=True)
 

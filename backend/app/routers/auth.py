@@ -34,7 +34,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
             detail="Email already registered",
         )
     
-    #  Restrict coordinator registration
+    # Restrict coordinator registration
     if payload.role == "coordinator" and payload.email not in allowed_coordinators:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -57,6 +57,27 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         is_active=True,
     )
     db.add(user)
+    db.flush()  # Get the user.id before creating Student/Coordinator
+
+    # ✅ 4. CREATE ROLE-SPECIFIC RECORD
+    if payload.role == "student":
+        student = Student(
+            user_id=user.id,
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+            # All other fields default to NULL/0
+        )
+        db.add(student)
+
+    elif payload.role == "coordinator":
+        coordinator = Coordinator(
+        user_id=user.id,
+        first_name=payload.first_name,  # ✅ From User
+        last_name=payload.last_name,    # ✅ From User
+        is_primary=False,
+        )
+        db.add(coordinator)
+
     db.commit()
     db.refresh(user)
 
@@ -100,7 +121,6 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         access_token=access_token,
         refresh_token=refresh_token,
     )
-
 
 @router.post("/login", response_model=TokenResponse)
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
