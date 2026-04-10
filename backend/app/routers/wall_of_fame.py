@@ -118,18 +118,21 @@ def add_to_wall(
     """
     
     # Verify student exists and is placed
-    student = db.query(Student).filter(Student.id == payload.placed_student_id).first()
-    
+    # ✅ ADD THESE LINES instead
+    placed = db.query(PlacedStudent).filter(PlacedStudent.id == payload.placed_student_id).first()
+
+    if not placed:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Placed student record not found"
+        )
+
+    student = db.query(Student).filter(Student.id == placed.student_id).first()
+
     if not student:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Student not found"
-        )
-    
-    if student.placement_status != "placed":
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Student must be marked as 'placed' first"
         )
     
     # Check if already exists
