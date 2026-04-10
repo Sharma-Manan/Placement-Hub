@@ -19,6 +19,7 @@ class ApplicationOut(BaseModel):
     student_email: str
     student_cgpa: Optional[str] = None
     student_department: Optional[str] = None
+    student_resume_url: Optional[str] = None 
 
     status: str
     created_at: datetime
