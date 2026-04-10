@@ -72,6 +72,8 @@ def create_opportunity(
     data = opportunity_in.model_dump()
     data["jd_url"] = jd_url
 
+    data.pop("company_name", None)
+
     # 4. Create opportunity
     opportunity = Opportunity(
         **data,

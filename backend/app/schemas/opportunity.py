@@ -4,7 +4,7 @@ from uuid import UUID
 from datetime import datetime, timezone
 from enum import Enum
 from app.schemas.eligibility_rules import EligibilityRulesOut
-
+from fastapi import Form
 
 class OpportunityStatus(str, Enum):
     draft  = "draft"
@@ -34,6 +34,28 @@ class OpportunityBase(BaseModel):
 #changed
 class OpportunityCreate(OpportunityBase):
     company_name: str
+    @classmethod
+    def as_form(
+        cls,
+        company_name: str = Form(...),
+        title: str = Form(...),
+        description: str = Form(None),
+        location: str = Form(None),
+        ctc_lpa: float = Form(...),
+        application_deadline: datetime = Form(...),
+        company_url: str = Form(None),
+        company_logo: str = Form(None),
+    ):
+        return cls(
+            company_name=company_name,
+            title=title,
+            description=description,
+            location=location,
+            ctc_lpa=ctc_lpa,
+            application_deadline=application_deadline,
+            company_url=company_url,
+            company_logo=company_logo,
+        )
 
 
 class OpportunityUpdate(BaseModel):
