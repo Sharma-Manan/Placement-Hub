@@ -36,7 +36,7 @@ from app.utils.supabase_storage import upload_to_supabase
     status_code=status.HTTP_201_CREATED
 )
 def create_opportunity(
-    payload: OpportunityCreate = Depends(),   # 🔥 important
+    payload: OpportunityCreate = Depends(OpportunityCreate.as_form),   # 🔥 important
     jd_file: UploadFile = File(None),         # 🔥 file input
     db: Session = Depends(get_db),
     _: CurrentUser = Depends(require_coordinator),
