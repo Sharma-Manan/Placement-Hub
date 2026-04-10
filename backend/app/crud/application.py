@@ -14,6 +14,8 @@ from app.schemas.application import ApplicationStatusUpdate
 from app.services.eligibility import check_eligibility
 from app.models.student import Student
 from app.models.placed_student import PlacedStudent
+from app.services.notification_service import notify_student, notify_all_coordinators
+from app.models.notification import NotificationType
 
 
 # --------------------------------------------------
@@ -77,6 +79,29 @@ def apply_to_opportunity(db: Session, student_id: str, opportunity_id: str) -> A
     db.add(application)
     db.commit()
     db.refresh(application)
+
+     # ── NOTIFICATIONS ──────────────────────────────
+
+    # 1. Notify student: application submitted successfully
+    notify_student(
+        db=db,
+        user_id=student.user_id,
+        type=NotificationType.APPLICATION_SUBMITTED,
+        title="Application Submitted",
+        message=f"Your application for {opportunity.title} at {opportunity.company_name} has been submitted successfully.",
+        related_opportunity_id=opportunity.id,
+        related_application_id=application.id,
+    )
+
+    # 2. Notify all coordinators: new application received
+    notify_all_coordinators(
+        db=db,
+        type=NotificationType.NEW_APPLICATION,
+        title="New Application Received",
+        message=f"{student.first_name} {student.last_name} applied for {opportunity.title} at {opportunity.company_name}.",
+        related_opportunity_id=opportunity.id,
+        related_application_id=application.id,
+    )
 
     return application
 
@@ -204,5 +229,90 @@ def update_application_status(
 
     db.commit()
     db.refresh(application)
+
+     # ── NOTIFICATIONS ──────────────────────────────
+
+    # Get student user_id for notification
+    student = db.query(Student).filter(Student.id == application.student_id).first()
+    opportunity = db.query(Opportunity).filter(Opportunity.id == application.opportunity_id).first()
+
+    if student and opportunity:
+
+        if payload.status == "shortlisted":
+            notify_student(
+                db=db,
+                user_id=student.user_id,
+                type=NotificationType.STATUS_SHORTLISTED,
+                title="You've Been Shortlisted! 🎉",
+                message=f"Congratulations! You have been shortlisted for {opportunity.title} at {opportunity.company_name}.",
+                related_opportunity_id=opportunity.id,
+                related_application_id=application.id,
+            )
+
+        elif payload.status == "rejected":
+            notify_student(
+                db=db,
+                user_id=student.user_id,
+                type=NotificationType.STATUS_REJECTED,
+                title="Application Update",
+                message=f"Your application for {opportunity.title} at {opportunity.company_name} was not selected this time.",
+                related_opportunity_id=opportunity.id,
+                related_application_id=application.id,
+            )
+
+        elif payload.status == "test_scheduled":
+            notify_student(
+                db=db,
+                user_id=student.user_id,
+                type=NotificationType.STATUS_TEST_SCHEDULED,
+                title="Test Scheduled 📝",
+                message=f"A test has been scheduled for {opportunity.title} at {opportunity.company_name}. Check your schedule.",
+                related_opportunity_id=opportunity.id,
+                related_application_id=application.id,
+            )
+
+        elif payload.status == "interviewed":
+            notify_student(
+                db=db,
+                user_id=student.user_id,
+                type=NotificationType.STATUS_INTERVIEW_SCHEDULED,
+                title="Interview Scheduled 🗓️",
+                message=f"An interview has been scheduled for {opportunity.title} at {opportunity.company_name}. Best of luck!",
+                related_opportunity_id=opportunity.id,
+                related_application_id=application.id,
+            )
+
+        elif payload.status == "offered":
+            notify_student(
+                db=db,
+                user_id=student.user_id,
+                type=NotificationType.OFFER_RECEIVED,
+                title="Offer Received! 🎁",
+                message=f"You have received an offer from {opportunity.company_name} for {opportunity.title}.",
+                related_opportunity_id=opportunity.id,
+                related_application_id=application.id,
+            )
+
+        elif payload.status == "accepted":
+            # Notify student: offer accepted
+            notify_student(
+                db=db,
+                user_id=student.user_id,
+                type=NotificationType.OFFER_ACCEPTED,
+                title="Offer Accepted! 🎊",
+                message=f"You have successfully accepted the offer from {opportunity.company_name}. Congratulations!",
+                related_opportunity_id=opportunity.id,
+                related_application_id=application.id,
+            )
+
+            # Notify all coordinators: student accepted offer
+            notify_all_coordinators(
+                db=db,
+                type=NotificationType.STUDENT_OFFER_ACCEPTED,
+                title="Student Accepted Offer 🏆",
+                message=f"{student.first_name} {student.last_name} has accepted the offer from {opportunity.company_name} for {opportunity.title}.",
+                related_opportunity_id=opportunity.id,
+                related_application_id=application.id,
+            )
 
     return application

@@ -8,6 +8,10 @@ from app.models.application import Application
 from app.models.student import Student
 from app.core.dependencies import require_student, require_coordinator
 from app.schemas.application import BulkShortlistRequest
+from app.services.notification_service import notify_student
+from app.models.notification import NotificationType
+from app.models.student import Student as StudentModel
+from app.models.user import User
 
 
 from app.schemas.application import (
@@ -25,8 +29,8 @@ from app.crud.application import (
 
 application_router = APIRouter(tags=["Applications"])
 
-def notify(student_id, message):
-    print(f"Notify {student_id}: {message}")
+# def notify(student_id, message):
+#     print(f"Notify {student_id}: {message}")
     
 # --------------------------------------------------
 # Apply to Opportunity (Student)
@@ -129,15 +133,40 @@ def bulk_shortlist(
     # -------------------------
     selected_ids = set(student_ids)
 
+    # ── NOTIFICATIONS ──────────────────────────────
     all_apps = db.query(Application).filter(
         Application.opportunity_id == opportunity_id
     ).all()
 
     for app in all_apps:
-        if app.student_id in selected_ids:
-            notify(app.student_id, "You are shortlisted 🎉")
+        # Get student to find user_id
+        student = db.query(StudentModel).filter(
+            StudentModel.id == app.student_id
+        ).first()
+
+        if not student:
+            continue
+
+        if str(app.student_id) in selected_ids:
+            notify_student(
+                db=db,
+                user_id=student.user_id,
+                type=NotificationType.STATUS_SHORTLISTED,
+                title="You've Been Shortlisted! 🎉",
+                message=f"You have been shortlisted. Check your dashboard for next steps.",
+                related_opportunity_id=app.opportunity_id,
+                related_application_id=app.id,
+            )
         else:
-            notify(app.student_id, "Not shortlisted")
+            notify_student(
+                db=db,
+                user_id=student.user_id,
+                type=NotificationType.STATUS_REJECTED,
+                title="Application Update",
+                message=f"Unfortunately you were not shortlisted this time. Keep applying!",
+                related_opportunity_id=app.opportunity_id,
+                related_application_id=app.id,
+            )
 
     return {"message": "Shortlisting completed"}
 
