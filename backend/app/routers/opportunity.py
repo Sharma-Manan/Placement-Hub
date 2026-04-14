@@ -162,23 +162,34 @@ def get_student_opportunities(
         
         # Build response object
         opp_dict = {
-            "id": opp.id,   # ✅ FIXED
-            "title": opp.title,
-            "company_id": opp.company_id,   # ✅ REQUIRED
-            "company_name": opp.company_name,
-            "description": opp.description,
-            "location": opp.location,
-            "ctc_lpa": opp.ctc_lpa,
-            "application_deadline": opp.application_deadline,
-            "status": opp.status,   # ✅ REQUIRED
-            "created_at": opp.created_at,
-            "updated_at": opp.updated_at,
+    "id": opp.id,
+    "title": opp.title,
+    "company_id": opp.company_id,
+    "company_name": opp.company_name,
+    "description": opp.description,
+    "location": opp.location,
+    "ctc_lpa": opp.ctc_lpa,
+    "application_deadline": opp.application_deadline,
+    "status": opp.status,
+    "created_at": opp.created_at,
+    "updated_at": opp.updated_at,
+    "company_logo": opp.company_logo,       # ← add
+    "company_url": opp.company_url,         # ← add
+    "jd_url": opp.jd_url,                   # ← add
+    "additional_criteria": opp.additional_criteria,  # ← add
+    "eligibility": {                         # ← add
+        "min_cgpa": rules.min_cgpa if rules else None,
+        "max_backlogs": rules.max_backlogs if rules else None,
+        "allowed_depts": rules.allowed_depts if rules else [],
+        "allowed_batches": rules.allowed_batches if rules else [],
+        "no_prior_offer": rules.no_prior_offer if rules else False,
+    } if rules else None,
 
-            # student-specific
-            "has_applied": has_applied,
-            "is_eligible": is_eligible,
-            "ineligible_reason": ineligible_reason,
-        }
+    # student-specific
+    "has_applied": has_applied,
+    "is_eligible": is_eligible,
+    "ineligible_reason": ineligible_reason,
+}
         
         result.append(opp_dict)
     
@@ -210,20 +221,3 @@ def get_opportunity_by_id(
 ):
     return crud_get_opportunity(db, opportunity_id)
 
-
-# ── student-only routes ───────────────────────────────────────────
-
-# @opportunity_router.get(
-#     "/opportunities/eligible",
-#     response_model=List[OpportunityOutStudent],
-# )
-# def get_eligible_opportunities(
-#     db:           Session     = Depends(get_db),
-#     current_user: CurrentUser = Depends(get_current_user),
-# ):
-#     if current_user.role != "student":
-#         raise HTTPException(
-#             status_code=status.HTTP_403_FORBIDDEN,
-#             detail="Only students can access eligible opportunities"
-#         )
-#     return crud_get_eligible_opportunities(db, current_user.id)9+

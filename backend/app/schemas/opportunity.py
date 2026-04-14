@@ -113,6 +113,11 @@ class OpportunityOutStudent(OpportunityOut):
     is_eligible:       bool
     has_applied:       bool
     ineligible_reason: Optional[str] = None  # "Requires 8.0 CGPA (you have 7.2)"
+    
+    company_logo: Optional[str] = None
+    company_url: Optional[str] = None
+    jd_url: Optional[str] = None
+    additional_criteria: Optional[str] = None
 
 
 
