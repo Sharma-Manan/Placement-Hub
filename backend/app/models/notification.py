@@ -45,6 +45,10 @@ class NotificationType(str, enum.Enum):
     STUDENT_OFFER_ACCEPTED = "student_offer_accepted"
     WALL_OF_FAME_ADDED = "wall_of_fame_added"
 
+    # Announcements
+    ANNOUNCEMENT = "announcement"
+    ANNOUNCEMENT_MENTIONED = "announcement_mentioned"
+
 
 class NotificationRole(str, enum.Enum):
     student = "student"
