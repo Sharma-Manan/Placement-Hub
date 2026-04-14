@@ -15,6 +15,7 @@ from app.routers.wall_of_fame import wall_of_fame_router
 from app.routers.event import router as event_router
 from app.routers.placed_student import router as placed_router
 from app.routers.notification import notification_router
+from app.routers.announcement import announcement_router
 
 
 
@@ -67,3 +68,4 @@ app.include_router(wall_of_fame_router, tags=["Wall of Fame"])
 app.include_router(event_router)
 app.include_router(placed_router)
 app.include_router(notification_router)
+app.include_router(announcement_router)
