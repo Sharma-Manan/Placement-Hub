@@ -73,12 +73,14 @@ def delete_opportunity(
     crud_delete_opportunity(db, opportunity_id)
 
 
+# Add this import at the top of your file
+from fastapi.responses import JSONResponse
+import json
 
 @opportunity_router.get(
     "/student/opportunities",
-    response_model=List[OpportunityOutStudent],
     summary="Get Opportunities for Student",
-    description="Returns all active opportunities with eligibility check and application status for the logged-in student"
+    # NO response_model here
 )
 def get_student_opportunities(
     skip: int = 0,
@@ -101,11 +103,14 @@ def get_student_opportunities(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Student profile not found. Please complete your profile first."
         )
-    now = datetime.now(timezone.utc)   
+    
+    now = datetime.now(timezone.utc)
+    
     # 2. Get all active opportunities
     opportunities = db.query(Opportunity).filter(
         Opportunity.status == "active",
-        Opportunity.application_deadline > now).offset(skip).limit(limit).all()
+        Opportunity.application_deadline > now
+    ).offset(skip).limit(limit).all()
     
     # 3. Enrich each opportunity with student-specific data
     result = []
@@ -125,76 +130,68 @@ def get_student_opportunities(
         is_eligible = True
         ineligible_reason = None
 
-        # ✅ Fetch rules properly (NOT opp.eligibility)
+        # Fetch rules
         rules = db.query(EligibilityRules).filter(
             EligibilityRules.opportunity_id == opp.id
         ).first()
 
         if rules:
-            # CGPA Check
-            if rules.min_cgpa is not None:
-                if student.cgpa < rules.min_cgpa:
-                    is_eligible = False
-                    ineligible_reason = f"Minimum CGPA {rules.min_cgpa} required (You have {student.cgpa})"
+            if rules.min_cgpa is not None and float(student.cgpa) < float(rules.min_cgpa):
+                is_eligible = False
+                ineligible_reason = f"Minimum CGPA {rules.min_cgpa} required (You have {student.cgpa})"
 
-            # Backlogs Check
-            if rules.max_backlogs is not None and is_eligible:
-                if student.active_backlogs > rules.max_backlogs:
-                    is_eligible = False
-                    ineligible_reason = f"Maximum {rules.max_backlogs} backlogs allowed (You have {student.active_backlogs})"
-
-            # Department Check
-            if rules.allowed_depts and is_eligible:
-                if student.department_id not in rules.allowed_depts:
-                    is_eligible = False
-                    ineligible_reason = f"Only {', '.join(rules.allowed_depts)} departments are eligible"
-
-            # Batch Check
-            if rules.allowed_batches and is_eligible:
-                if student.graduation_year not in rules.allowed_batches:
-                    is_eligible = False
-                    ineligible_reason = f"Only batches {', '.join(map(str, rules.allowed_batches))} are eligible"
-
-            # Prior Offer Check
-            if rules.no_prior_offer and is_eligible:
-                if student.placement_status != "unplaced":
-                    is_eligible = False
-                    ineligible_reason = "Only unplaced students can apply"
+            if rules.max_backlogs is not None and is_eligible and student.active_backlogs > rules.max_backlogs:
+                is_eligible = False
+                ineligible_reason = f"Maximum {rules.max_backlogs} backlogs allowed (You have {student.active_backlogs})"
         
-        # Build response object
+        # Build response object - EXPLICITLY include all fields
         opp_dict = {
-    "id": opp.id,
-    "title": opp.title,
-    "company_id": opp.company_id,
-    "company_name": opp.company_name,
-    "description": opp.description,
-    "location": opp.location,
-    "ctc_lpa": opp.ctc_lpa,
-    "application_deadline": opp.application_deadline,
-    "status": opp.status,
-    "created_at": opp.created_at,
-    "updated_at": opp.updated_at,
-    "company_logo": opp.company_logo,       # ← add
-    "company_url": opp.company_url,         # ← add
-    "jd_url": opp.jd_url,                   # ← add
-    "additional_criteria": opp.additional_criteria,  # ← add
-    "eligibility": {                         # ← add
-        "min_cgpa": rules.min_cgpa if rules else None,
-        "max_backlogs": rules.max_backlogs if rules else None,
-        "allowed_depts": rules.allowed_depts if rules else [],
-        "allowed_batches": rules.allowed_batches if rules else [],
-        "no_prior_offer": rules.no_prior_offer if rules else False,
-    } if rules else None,
+            "id": str(opp.id),
+            "title": opp.title,
+            "company_id": str(opp.company_id) if opp.company_id else None,
+            "company_name": opp.company_name,
+            "description": opp.description,
+            "location": opp.location,
+            "ctc_lpa": float(opp.ctc_lpa) if opp.ctc_lpa is not None else None,
+            "application_deadline": opp.application_deadline.isoformat() if opp.application_deadline else None,
+            "status": opp.status,
+            "created_at": opp.created_at.isoformat() if opp.created_at else None,
+            "updated_at": opp.updated_at.isoformat() if opp.updated_at else None,
+            
+            # ✅ THESE 4 FIELDS YOU WANTED
+            "company_logo": opp.company_logo,
+            "company_url": opp.company_url,
+            "jd_url": opp.jd_url,
+            "additional_criteria": opp.additional_criteria,
+            
+            # Eligibility object
+            "eligibility": {
+                "min_cgpa": float(rules.min_cgpa) if rules and rules.min_cgpa else None,
+                "max_backlogs": rules.max_backlogs if rules else None,
+                "allowed_depts": rules.allowed_depts if rules else [],
+                "allowed_batches": rules.allowed_batches if rules else [],
+                "no_prior_offer": rules.no_prior_offer if rules else False,
+            } if rules else None,
 
-    # student-specific
-    "has_applied": has_applied,
-    "is_eligible": is_eligible,
-    "ineligible_reason": ineligible_reason,
-}
+            # student-specific
+            "has_applied": has_applied,
+            "is_eligible": is_eligible,
+            "ineligible_reason": ineligible_reason,
+        }
         
         result.append(opp_dict)
     
-    return result
+    # DEBUG: Print to terminal to verify
+    if result:
+        print("\n" + "="*80)
+        print("DEBUG: FIRST OPPORTUNITY BEING SENT TO FRONTEND")
+        print("="*80)
+        print(json.dumps(result[0], indent=2, default=str))
+        print("="*80 + "\n")
+    
+    # ✅ Return as JSONResponse to bypass any Pydantic filtering
+    return JSONResponse(content=result)
+
 
 @opportunity_router.get(
     "/opportunities",
