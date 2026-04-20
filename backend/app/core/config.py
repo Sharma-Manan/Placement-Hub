@@ -32,4 +32,4 @@ def init_cloudinary():
         api_secret=os.getenv("CLOUDINARY_API_SECRET"),
         secure=True
     )
-    print("Cloudinary configured")
+    print("✅ Cloudinary configured")
