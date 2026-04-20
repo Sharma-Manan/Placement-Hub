@@ -27,6 +27,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 @router.post("/register", response_model=TokenResponse)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     # 1. Check if user already exists
+    print("🔥 ROLE RECEIVED:", payload.role)
     existing_user = db.query(User).filter(User.email == payload.email).first()
     if existing_user:
         raise HTTPException(
@@ -35,7 +36,7 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
         )
 
     # 2. Restrict coordinator registration
-    if payload.role == "coordinator" and payload.email not in allowed_coordinators:
+    if payload.role.lower() == "coordinator" and payload.email not in allowed_coordinators:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You are not authorized to register as coordinator"
@@ -60,13 +61,13 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     db.flush()  # get user.id before creating Student/Coordinator
 
     # 5. Create role-specific record with full skeleton data
-    if payload.role == "student":
+    if payload.role.lower() == "student":
         student = Student(
             user_id=user.id,
             first_name=payload.first_name,
             last_name=payload.last_name,
             roll_no=f"TEMP-{uuid.uuid4()}",
-            department_id="",
+            department_id=None,
             graduation_year=0,
             cgpa=0.0,
             tenth_percentage=0.0,

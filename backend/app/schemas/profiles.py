@@ -76,4 +76,4 @@ class StudentProfileOut(BaseModel):
     profile_photo_url: Optional[str]
 
     class Config:
-        from_attributes = True   # VERY IMPORTANT (for SQLAlchemy)
+        from_attributes = True   
