@@ -16,6 +16,8 @@ from app.routers.event import router as event_router
 from app.routers.placed_student import router as placed_router
 from app.routers.notification import notification_router
 from app.routers.announcement import announcement_router
+# Import all models for SQLAlchemy metadata
+from app import models
 
 
 

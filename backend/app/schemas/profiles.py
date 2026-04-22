@@ -76,4 +76,39 @@ class StudentProfileOut(BaseModel):
     profile_photo_url: Optional[str]
 
     class Config:
-        from_attributes = True   
+        from_attributes = True
+
+
+# AI Data Extraction Schemas
+class GitHubData(BaseModel):
+    languages: list[str] = []
+    repo_count: int = 0
+    top_repos: list[str] = []
+    stars: int = 0
+    followers: int = 0
+    activity_level: str = ""
+
+
+class StudentAIDataCreate(BaseModel):
+    skills: list[str] = []
+    projects: list[dict] = []
+    experience: list[dict] = []
+    education: list[dict] = []
+    certifications: list[dict] = []
+    github: GitHubData = GitHubData()
+
+
+class StudentAIDataOut(BaseModel):
+    id: str
+    user_id: str
+    skills: list[str]
+    projects: list[dict]
+    experience: list[dict]
+    education: list[dict]
+    certifications: list[dict]
+    github: GitHubData
+    created_at: str
+    updated_at: str
+
+    class Config:
+        from_attributes = True
