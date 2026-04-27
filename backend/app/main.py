@@ -16,8 +16,7 @@ from app.routers.event import router as event_router
 from app.routers.placed_student import router as placed_router
 from app.routers.notification import notification_router
 from app.routers.announcement import announcement_router
-# Import all models for SQLAlchemy metadata
-from app import models
+from app.routers.ai_extraction import ai_extraction_router
 
 
 
@@ -71,3 +70,4 @@ app.include_router(event_router)
 app.include_router(placed_router)
 app.include_router(notification_router)
 app.include_router(announcement_router)
+app.include_router(ai_extraction_router)

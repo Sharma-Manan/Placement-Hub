@@ -8,10 +8,9 @@ from app.models.coordinator import Coordinator
 from app.models.opportunity import Opportunity
 from app.models.application import Application
 from app.models.eligibility_rules import EligibilityRules
-from app.models.student_ai_data import StudentAIData
 
 from app.services.cloudinary_service import CloudinaryService
-from app.schemas.profiles import StudentProfileCreate, CoordinatorProfileCreate, StudentAIDataCreate, StudentAIDataOut
+from app.schemas.profiles import StudentProfileCreate, CoordinatorProfileCreate
 from app.schemas.placed_student import PlacedStudentListOut
 from app.schemas.auth import CurrentUser
 from pydantic import BaseModel
@@ -304,63 +303,4 @@ def list_placed_students(
     current_user: CurrentUser = Depends(require_coordinator),
 ):
     return get_all_placed_students(db, skip, limit)
-
-
-@student_profile_create.post("/ai-data")
-def save_ai_data(
-    payload: StudentAIDataCreate,
-    db: Session = Depends(get_db),
-    current_user: CurrentUser = Depends(require_student),
-):
-    """
-    Save extracted AI data from resume/profile parsing for the current student.
-    
-    This endpoint stores structured data including skills, projects, experience, 
-    education, certifications, and GitHub profile information.
-    """
-    
-    # Check if student AI data already exists
-    existing = db.query(StudentAIData).filter_by(user_id=current_user.id).first()
-    
-    if existing:
-        # Update existing record
-        for key, value in payload.model_dump().items():
-            setattr(existing, key, value)
-        db.commit()
-        db.refresh(existing)
-        return {
-            "message": "AI data updated successfully",
-            "data": existing
-        }
-    
-    # Create new record
-    ai_data = StudentAIData(user_id=current_user.id, **payload.model_dump())
-    db.add(ai_data)
-    db.commit()
-    db.refresh(ai_data)
-    
-    return {
-        "message": "AI data saved successfully",
-        "data": ai_data
-    }
-
-
-@student_profile_create.get("/ai-data", response_model=StudentAIDataOut)
-def get_ai_data(
-    db: Session = Depends(get_db),
-    current_user: CurrentUser = Depends(require_student),
-):
-    """
-    Retrieve extracted AI data for the current student.
-    """
-    ai_data = db.query(StudentAIData).filter_by(user_id=current_user.id).first()
-    
-    if not ai_data:
-        raise HTTPException(
-            status_code=404,
-            detail="No AI data found for this student"
-        )
-    
-    return ai_data
-
 

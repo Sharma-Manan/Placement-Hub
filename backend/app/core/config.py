@@ -24,6 +24,8 @@ print(f"✅ CORS Allowed Origins: {origins}")
 
 BCRYPT_ROUNDS = int(os.getenv("BCRYPT_ROUNDS", 12))
 
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 
 def init_cloudinary():
     cloudinary.config(
