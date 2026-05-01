@@ -1,15 +1,20 @@
 import json
 import io
+import logging
+import urllib.request
+from typing import Dict, Any
 from PyPDF2 import PdfReader
 from groq import Groq
 from app.core.config import GROQ_API_KEY
 
+logger = logging.getLogger(__name__)
 
-EXTRACTION_PROMPT = """You are a resume parser. Extract structured data from the following resume text.
+EXTRACTION_PROMPT = """You are an expert resume parser. Extract structured data from the following resume text.
 
-Return ONLY valid JSON with this exact structure (no markdown, no explanation, no extra text):
+Return ONLY a valid JSON object matching the exact structure below. Do not include any explanations, markdown formatting, or code blocks.
+
 {
-  "skills": ["skill1", "skill2", ...],
+  "skills": ["skill1", "skill2"],
   "education": [
     {
       "degree": "B.Tech in Computer Science",
@@ -46,65 +51,96 @@ Return ONLY valid JSON with this exact structure (no markdown, no explanation, n
 Rules:
 - If a section has no data, return an empty array [] for lists or null for summary.
 - Do NOT invent data. Only extract what is explicitly mentioned.
-- Return ONLY the JSON object, nothing else.
+- Ensure the response is a valid JSON object.
 
 Resume text:
 """
 
+def extract_text_from_pdf_url(pdf_url: str) -> str:
+    """Download PDF from URL and extract text."""
+    try:
+        req = urllib.request.Request(pdf_url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req) as response:
+            file_bytes = response.read()
+            
+        reader = PdfReader(io.BytesIO(file_bytes))
+        text = ""
+        
+        if not reader.pages:
+            raise ValueError("PDF has no pages")
+            
+        for page_num, page in enumerate(reader.pages):
+            try:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text + "\n"
+            except Exception as e:
+                logger.warning(f"Error extracting page {page_num}: {str(e)}")
+                continue
+                
+        return text.strip()
+    except Exception as e:
+        logger.error(f"Failed to fetch or extract PDF from URL: {str(e)}")
+        raise ValueError(f"Failed to extract text from resume PDF: {str(e)}")
 
-def extract_text_from_pdf(file_bytes: bytes) -> str:
-    """Extract text content from a PDF file."""
-    reader = PdfReader(io.BytesIO(file_bytes))
-    text = ""
-    for page in reader.pages:
-        page_text = page.extract_text()
-        if page_text:
-            text += page_text + "\n"
-    return text.strip()
+def parse_resume_from_url(resume_url: str) -> Dict[str, Any]:
+    """Fetch PDF, extract text, and send to Groq LLM to get structured JSON."""
+    if not resume_url:
+        return {}
+        
+    try:
+        raw_text = extract_text_from_pdf_url(resume_url)
+    except Exception as e:
+        logger.error(f"Error getting raw text: {e}")
+        return {"error": str(e)}
 
-
-def extract_resume_data(raw_text: str) -> dict:
-    """Send resume text to Groq LLM and get structured JSON back."""
-    client = Groq(api_key=GROQ_API_KEY)
-
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a precise resume parser. You only return valid JSON. No markdown, no explanation.",
-            },
-            {
-                "role": "user",
-                "content": EXTRACTION_PROMPT + raw_text,
-            },
-        ],
-        model="llama-3.3-70b-versatile",
-        temperature=0.1,
-        max_tokens=4096,
-    )
-
-    response_text = chat_completion.choices[0].message.content.strip()
-
-    # Clean up response if it has markdown code fences
-    if response_text.startswith("```"):
-        response_text = response_text.split("```")[1]
-        if response_text.startswith("json"):
-            response_text = response_text[4:]
-        response_text = response_text.strip()
+    if not raw_text or len(raw_text.strip()) < 50:
+        return {"error": "Resume text is empty or too short"}
 
     try:
-        parsed = json.loads(response_text)
-    except json.JSONDecodeError:
-        raise ValueError(f"AI returned invalid JSON. Raw response: {response_text[:500]}")
-
-    # Ensure all expected keys exist
-    result = {
-        "skills": parsed.get("skills", []),
-        "education": parsed.get("education", []),
-        "projects": parsed.get("projects", []),
-        "experience": parsed.get("experience", []),
-        "certifications": parsed.get("certifications", []),
-        "summary": parsed.get("summary", None),
-    }
-
-    return result
+        client = Groq(api_key=GROQ_API_KEY)
+        
+        logger.info("Sending resume text to Groq for extraction...")
+        
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You are a precise JSON-only resume parser. You must output valid JSON.",
+                },
+                {
+                    "role": "user",
+                    "content": EXTRACTION_PROMPT + raw_text,
+                },
+            ],
+            model="llama-3.3-70b-versatile",
+            temperature=0.1,
+            max_tokens=4096,
+            response_format={"type": "json_object"},
+        )
+        
+        response_text = chat_completion.choices[0].message.content.strip()
+        logger.debug(f"Groq response: {response_text[:500]}")
+        
+        try:
+            parsed = json.loads(response_text)
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON parse error: {str(e)}")
+            return {"error": "AI returned invalid JSON"}
+            
+        # Ensure standard keys exist
+        result = {
+            "skills": parsed.get("skills") or [],
+            "education": parsed.get("education") or [],
+            "projects": parsed.get("projects") or [],
+            "experience": parsed.get("experience") or [],
+            "certifications": parsed.get("certifications") or [],
+            "summary": parsed.get("summary") or None,
+        }
+        
+        logger.info("Resume extraction successful")
+        return result
+        
+    except Exception as e:
+        logger.error(f"Groq API error: {str(e)}")
+        return {"error": f"Failed to extract resume data: {str(e)}"}

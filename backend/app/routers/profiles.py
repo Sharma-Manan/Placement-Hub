@@ -21,6 +21,8 @@ from app.crud.placed_students import get_all_placed_students
 from app.services.conflict_service import get_student_conflicts
 from app.schemas.profiles import StudentProfileOut
 
+from app.services.ai_extraction_service import parse_resume_from_url
+
 student_profile_create = APIRouter(prefix="/student", tags=["Student"])
 coordinator_profile_create = APIRouter(prefix="/coordinator", tags=["Coordinator"])
 
@@ -38,19 +40,25 @@ def upsert_student_profile(
             data[field] = str(data[field])
 
     existing = db.query(Student).filter_by(user_id=current_user.id).first()
+    
+    extracted_data = None
+    if data.get("resume_url"):
+        # Parse resume and extract info directly without saving to db
+        extracted_data = parse_resume_from_url(data["resume_url"])
 
     if existing:
         for key, value in data.items():
             setattr(existing, key, value)
         db.commit()
         db.refresh(existing)
-        return {"message": "Student profile updated", "profile": existing}
+        return {"message": "Student profile updated", "profile": existing, "extracted_data": extracted_data}
 
     student = Student(user_id=current_user.id, **data)
     db.add(student)
     db.commit()
     db.refresh(student)
-    return {"message": "Student profile created", "profile": student}
+    return {"message": "Student profile created", "profile": student, "extracted_data": extracted_data}
+
 
 
 
