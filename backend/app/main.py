@@ -16,6 +16,7 @@ from app.routers.event import router as event_router
 from app.routers.placed_student import router as placed_router
 from app.routers.notification import notification_router
 from app.routers.announcement import announcement_router
+from app.routers.ai import ai_router
 
 
 
@@ -55,7 +56,8 @@ def debug_cors():
 def health():
     return {"status": "ok"}
 
-    
+
+app.include_router(ai_router)
 app.include_router(router)
 app.include_router(student_profile_create)
 app.include_router(coordinator_profile_create)
